@@ -1,2 +1,5 @@
 ### Health Check
 GET http://localhost:8080/api/health
+
+### GET all books
+GET http://localhost:8080/api/books
