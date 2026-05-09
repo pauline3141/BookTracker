@@ -3,3 +3,9 @@ GET http://localhost:8080/api/health
 
 ### GET all books
 GET http://localhost:8080/api/books
+
+### GET book by id (success)
+GET http://localhost:8080/api/books/1
+
+### GET book by id (404)
+GET http://localhost:8080/api/books/9999

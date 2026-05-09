@@ -1,7 +1,9 @@
 package de.dhbwravensburg.webeng.booktracker.controller;
 
 import de.dhbwravensburg.webeng.booktracker.model.Book;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -23,5 +25,14 @@ public class BookController {
     @GetMapping
     public List<Book> getAll() {
         return books;
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Book> getById(@PathVariable Long id) {
+        return books.stream()
+                .filter(b -> b.getId().equals(id))
+                .findFirst()
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 }
