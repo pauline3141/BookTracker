@@ -9,3 +9,33 @@ GET http://localhost:8080/api/books/1
 
 ### GET book by id (404)
 GET http://localhost:8080/api/books/9999
+
+### POST new book
+POST http://localhost:8080/api/books
+Content-Type: application/json
+
+{
+  "title": "Brave New World",
+  "author": "Aldous Huxley",
+  "isbn": "9780060850524",
+  "coverUrl": null,
+  "publishYear": 1932
+}
+
+### PUT book
+PUT http://localhost:8080/api/books/1
+Content-Type: application/json
+
+{
+  "title": "Der Herr der Ringe (überarbeitet)",
+  "author": "J.R.R. Tolkien",
+  "isbn": "9780544003415",
+  "coverUrl": null,
+  "publishYear": 1954
+}
+
+### DELETE book
+DELETE http://localhost:8080/api/books/2
+
+### DELETE book (404)
+DELETE http://localhost:8080/api/books/2
