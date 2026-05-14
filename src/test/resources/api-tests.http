@@ -39,3 +39,36 @@ DELETE http://localhost:8080/api/books/2
 
 ### DELETE book (404)
 DELETE http://localhost:8080/api/books/2
+
+### GET all shelves
+GET http://localhost:8080/api/shelves
+
+### GET shelf by id (success)
+GET http://localhost:8080/api/shelves/1
+
+### GET shelf by id (404)
+GET http://localhost:8080/api/shelves/9999
+
+### POST new shelf
+POST http://localhost:8080/api/shelves
+Content-Type: application/json
+
+{
+  "name": "Krimis",
+  "description": "Spannungs- und Detektivromane"
+}
+
+### PUT shelf
+PUT http://localhost:8080/api/shelves/1
+Content-Type: application/json
+
+{
+  "name": "Wunschliste 2026",
+  "description": "Aktualisierte Wunschliste für das Jahr 2026"
+}
+
+### DELETE shelf
+DELETE http://localhost:8080/api/shelves/3
+
+### DELETE shelf (404)
+DELETE http://localhost:8080/api/shelves/3
