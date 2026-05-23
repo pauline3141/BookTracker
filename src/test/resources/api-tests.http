@@ -72,3 +72,26 @@ DELETE http://localhost:8080/api/shelves/3
 
 ### DELETE shelf (404)
 DELETE http://localhost:8080/api/shelves/3
+
+### GET all entries
+GET http://localhost:8080/api/shelves/1/entries
+
+### POST book to shelf
+POST http://localhost:8080/api/shelves/1/entries
+Content-Type: application/json
+
+{
+  "bookId": 1,
+  "status": "WANT_TO_READ"
+}
+
+### PATCH update reading status
+PATCH http://localhost:8080/api/shelves/1/entries/1
+Content-Type: application/json
+
+{
+  "status": "READING"
+}
+
+### DELETE entry
+DELETE http://localhost:8080/api/shelves/1/entries/1
