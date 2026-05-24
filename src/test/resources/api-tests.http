@@ -105,3 +105,42 @@ Content-Type: application/json
 
 ### DELETE entry
 DELETE http://localhost:8080/api/shelves/1/entries/1
+
+### GET notes of an entry
+GET http://localhost:8080/api/entries/1/notes
+
+### GET all public notes
+GET http://localhost:8080/api/notes/public
+
+### POST notes with page reference
+POST http://localhost:8080/api/entries/1/notes
+Content-Type: application/json
+
+{
+  "pageReference": 342,
+  "content": "Starke Wendung auf dieser Seite",
+  "isPublic": false
+}
+
+### POST note without page reference
+POST http://localhost:8080/api/entries/1/notes
+Content-Type: application/json
+
+{
+  "pageReference": null,
+  "content": "Insgesamt ein großartiges Buch",
+  "isPublic": true
+}
+
+### PUT update note
+PUT http://localhost:8080/api/notes/1
+Content-Type: application/json
+
+{
+  "pageReference": 350,
+  "content": "Korrigierte Notiz",
+  "isPublic": true
+}
+
+### DELETE note
+DELETE http://localhost:8080/api/notes/1
