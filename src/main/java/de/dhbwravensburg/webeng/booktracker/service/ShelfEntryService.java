@@ -52,6 +52,16 @@ public class ShelfEntryService {
         });
     }
 
+    public Optional<ShelfEntry> updateProgress(Long entryId, int currentPage, int totalPages) {
+        return shelfEntryRepository.findById(entryId).map(entry -> {
+            entry.setCurrentPage(currentPage);
+            if (totalPages > 0) {
+                entry.setTotalPages(totalPages);
+            }
+            return shelfEntryRepository.save(entry);
+        });
+    }
+
     public boolean removeBook(Long entryId) {
         if (!shelfEntryRepository.existsById(entryId)) {
             return false;

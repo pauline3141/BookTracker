@@ -23,6 +23,8 @@ public class ShelfEntryController {
 
     public record StatusUpdateRequest(ReadingStatus status) {}
 
+    public record ProgressUpdateRequest(int currentPage, int totalPages) {}
+
     @GetMapping
     public List<ShelfEntryResponse> getAll(@PathVariable Long shelfId) {
         return service.findByShelfId(shelfId).stream()
@@ -48,6 +50,17 @@ public class ShelfEntryController {
             @PathVariable Long entryId,
             @RequestBody StatusUpdateRequest request) {
         return service.updateStatus(entryId, request.status())
+                .map(ShelfEntryMapper::toResponse)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PatchMapping("/{entryId}/progress")
+    public ResponseEntity<ShelfEntryResponse> updateProgress(
+            @PathVariable Long shelfId,
+            @PathVariable Long entryId,
+            @RequestBody ProgressUpdateRequest request) {
+        return service.updateProgress(entryId, request.currentPage(), request.totalPages())
                 .map(ShelfEntryMapper::toResponse)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
