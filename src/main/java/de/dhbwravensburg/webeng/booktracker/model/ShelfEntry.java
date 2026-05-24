@@ -38,4 +38,7 @@ public class ShelfEntry {
     private ReadingStatus status;
 
     private LocalDateTime addedAt;
+
+    private int currentPage;
+    private int totalPages;
 }

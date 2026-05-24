@@ -82,7 +82,17 @@ Content-Type: application/json
 
 {
   "bookId": 1,
-  "status": "WANT_TO_READ"
+  "status": "READING",
+  "totalPages": 1216
+}
+
+### PATCH update progress
+PATCH http://localhost:8080/api/shelves/1/entries/1/progress
+Content-Type: application/json
+
+{
+  "currentPage": 342,
+  "totalPages": 1216
 }
 
 ### PATCH update reading status

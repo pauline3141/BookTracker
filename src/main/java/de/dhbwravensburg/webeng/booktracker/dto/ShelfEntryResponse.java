@@ -9,5 +9,7 @@ public record ShelfEntryResponse(
         Long shelfId,
         BookResponse book,
         ReadingStatus status,
-        LocalDateTime addedAt
+        LocalDateTime addedAt,
+        int currentPage,
+        int totalPages
 ) {}

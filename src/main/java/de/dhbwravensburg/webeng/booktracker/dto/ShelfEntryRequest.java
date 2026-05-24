@@ -4,5 +4,6 @@ import de.dhbwravensburg.webeng.booktracker.model.ReadingStatus;
 
 public record ShelfEntryRequest(
         Long bookId,
-        ReadingStatus status
+        ReadingStatus status,
+        int totalPages
 ) {}

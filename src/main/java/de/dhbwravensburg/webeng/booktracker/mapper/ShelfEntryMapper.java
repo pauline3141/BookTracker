@@ -19,6 +19,8 @@ public final class ShelfEntryMapper {
         entry.setBook(book);
         entry.setStatus(request.status() != null ? request.status() : ReadingStatus.WANT_TO_READ);
         entry.setAddedAt(LocalDateTime.now());
+        entry.setCurrentPage(0);
+        entry.setTotalPages(request.totalPages());
         return entry;
     }
 
@@ -28,7 +30,9 @@ public final class ShelfEntryMapper {
                 entry.getShelf().getId(),
                 BookMapper.toResponse(entry.getBook()),
                 entry.getStatus(),
-                entry.getAddedAt()
+                entry.getAddedAt(),
+                entry.getCurrentPage(),
+                entry.getTotalPages()
         );
     }
 }
