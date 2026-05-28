@@ -4,6 +4,7 @@ import de.dhbwravensburg.webeng.booktracker.dto.BookNoteRequest;
 import de.dhbwravensburg.webeng.booktracker.dto.BookNoteResponse;
 import de.dhbwravensburg.webeng.booktracker.mapper.BookNoteMapper;
 import de.dhbwravensburg.webeng.booktracker.service.BookNoteService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,7 +38,7 @@ public class BookNoteController {
     @PostMapping("/entries/{entryId}/notes")
     public ResponseEntity<BookNoteResponse> addNote(
             @PathVariable Long entryId,
-            @RequestBody BookNoteRequest request) {
+            @Valid @RequestBody BookNoteRequest request) {
         return service.addNote(entryId, request)
                 .map(BookNoteMapper::toResponse)
                 .map(note -> ResponseEntity
@@ -49,7 +50,7 @@ public class BookNoteController {
     @PutMapping("/notes/{noteId}")
     public ResponseEntity<BookNoteResponse> updateNote(
             @PathVariable Long noteId,
-            @RequestBody BookNoteRequest request) {
+            @Valid @RequestBody BookNoteRequest request) {
         return service.updateNote(noteId, request)
                 .map(BookNoteMapper::toResponse)
                 .map(ResponseEntity::ok)

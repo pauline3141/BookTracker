@@ -5,6 +5,7 @@ import de.dhbwravensburg.webeng.booktracker.dto.BookResponse;
 import de.dhbwravensburg.webeng.booktracker.mapper.BookMapper;
 import de.dhbwravensburg.webeng.booktracker.model.Book;
 import de.dhbwravensburg.webeng.booktracker.service.BookService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,7 +38,7 @@ public class BookController {
     }
 
     @PostMapping
-    public ResponseEntity<BookResponse> create(@RequestBody BookRequest request) {
+    public ResponseEntity<BookResponse> create(@Valid @RequestBody BookRequest request) {
         Book created = service.create(BookMapper.toEntity(null, request));
         BookResponse response = BookMapper.toResponse(created);
         return ResponseEntity
@@ -48,7 +49,7 @@ public class BookController {
     @PutMapping("/{id}")
     public ResponseEntity<BookResponse> update(
             @PathVariable Long id,
-            @RequestBody BookRequest request) {
+            @Valid @RequestBody BookRequest request) {
         return service.update(id, BookMapper.toEntity(id, request))
                 .map(BookMapper::toResponse)
                 .map(ResponseEntity::ok)

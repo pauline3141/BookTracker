@@ -5,6 +5,7 @@ import de.dhbwravensburg.webeng.booktracker.dto.ShelfResponse;
 import de.dhbwravensburg.webeng.booktracker.mapper.ShelfMapper;
 import de.dhbwravensburg.webeng.booktracker.model.Shelf;
 import de.dhbwravensburg.webeng.booktracker.service.ShelfService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,7 +38,7 @@ public class ShelfController {
     }
 
     @PostMapping
-    public ResponseEntity<ShelfResponse> create(@RequestBody ShelfRequest request) {
+    public ResponseEntity<ShelfResponse> create(@Valid @RequestBody ShelfRequest request) {
         Shelf created = service.create(ShelfMapper.toEntity(null, request));
         ShelfResponse response = ShelfMapper.toResponse(created);
         return ResponseEntity
@@ -48,7 +49,7 @@ public class ShelfController {
     @PutMapping("/{id}")
     public ResponseEntity<ShelfResponse> update(
             @PathVariable Long id,
-            @RequestBody ShelfRequest request) {
+            @Valid @RequestBody ShelfRequest request) {
         return service.update(id, ShelfMapper.toEntity(id, request))
                 .map(ShelfMapper::toResponse)
                 .map(ResponseEntity::ok)

@@ -5,6 +5,7 @@ import de.dhbwravensburg.webeng.booktracker.dto.ShelfEntryResponse;
 import de.dhbwravensburg.webeng.booktracker.mapper.ShelfEntryMapper;
 import de.dhbwravensburg.webeng.booktracker.model.ReadingStatus;
 import de.dhbwravensburg.webeng.booktracker.service.ShelfEntryService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,7 +36,7 @@ public class ShelfEntryController {
     @PostMapping
     public ResponseEntity<ShelfEntryResponse> addBook(
             @PathVariable Long shelfId,
-            @RequestBody ShelfEntryRequest request) {
+            @Valid @RequestBody ShelfEntryRequest request) {
         return service.addBook(shelfId, request)
                 .map(ShelfEntryMapper::toResponse)
                 .map(entry -> ResponseEntity
