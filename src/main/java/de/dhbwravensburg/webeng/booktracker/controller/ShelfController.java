@@ -5,6 +5,8 @@ import de.dhbwravensburg.webeng.booktracker.dto.ShelfResponse;
 import de.dhbwravensburg.webeng.booktracker.mapper.ShelfMapper;
 import de.dhbwravensburg.webeng.booktracker.model.Shelf;
 import de.dhbwravensburg.webeng.booktracker.service.ShelfService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,15 +31,12 @@ public class ShelfController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ShelfResponse> getById(@PathVariable Long id) {
-        return service.findById(id)
-                .map(ShelfMapper::toResponse)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ShelfResponse getById(@PathVariable Long id) {
+        return ShelfMapper.toResponse(service.getOrThrow(id));
     }
 
     @PostMapping
-    public ResponseEntity<ShelfResponse> create(@RequestBody ShelfRequest request) {
+    public ResponseEntity<ShelfResponse> create(@Valid @RequestBody ShelfRequest request) {
         Shelf created = service.create(ShelfMapper.toEntity(null, request));
         ShelfResponse response = ShelfMapper.toResponse(created);
         return ResponseEntity
@@ -46,20 +45,16 @@ public class ShelfController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ShelfResponse> update(
+    public ShelfResponse update(
             @PathVariable Long id,
-            @RequestBody ShelfRequest request) {
-        return service.update(id, ShelfMapper.toEntity(id, request))
-                .map(ShelfMapper::toResponse)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+            @Valid @RequestBody ShelfRequest request) {
+        Shelf updated = service.update(id, ShelfMapper.toEntity(id, request));
+        return ShelfMapper.toResponse(updated);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        if (service.delete(id)) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.notFound().build();
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Long id) {
+        service.delete(id);
     }
 }

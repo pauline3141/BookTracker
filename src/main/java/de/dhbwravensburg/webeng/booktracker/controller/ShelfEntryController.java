@@ -5,6 +5,7 @@ import de.dhbwravensburg.webeng.booktracker.dto.ShelfEntryResponse;
 import de.dhbwravensburg.webeng.booktracker.mapper.ShelfEntryMapper;
 import de.dhbwravensburg.webeng.booktracker.model.ReadingStatus;
 import de.dhbwravensburg.webeng.booktracker.service.ShelfEntryService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,44 +36,35 @@ public class ShelfEntryController {
     @PostMapping
     public ResponseEntity<ShelfEntryResponse> addBook(
             @PathVariable Long shelfId,
-            @RequestBody ShelfEntryRequest request) {
-        return service.addBook(shelfId, request)
-                .map(ShelfEntryMapper::toResponse)
-                .map(entry -> ResponseEntity
-                        .created(URI.create("/api/shelves/" + shelfId + "/entries/" + entry.id()))
-                        .body(entry))
-                .orElse(ResponseEntity.notFound().build());
+            @Valid @RequestBody ShelfEntryRequest request) {
+        ShelfEntryResponse entry = ShelfEntryMapper.toResponse(service.addBook(shelfId, request));
+        return ResponseEntity
+                .created(URI.create("/api/shelves/" + shelfId + "/entries/" + entry.id()))
+                .body(entry);
     }
 
     @PatchMapping("/{entryId}")
-    public ResponseEntity<ShelfEntryResponse> updateStatus(
+    public ShelfEntryResponse updateStatus(
             @PathVariable Long shelfId,
             @PathVariable Long entryId,
             @RequestBody StatusUpdateRequest request) {
-        return service.updateStatus(entryId, request.status())
-                .map(ShelfEntryMapper::toResponse)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return ShelfEntryMapper.toResponse(service.updateStatus(entryId, request.status()));
     }
 
     @PatchMapping("/{entryId}/progress")
-    public ResponseEntity<ShelfEntryResponse> updateProgress(
+    public ShelfEntryResponse updateProgress(
             @PathVariable Long shelfId,
             @PathVariable Long entryId,
             @RequestBody ProgressUpdateRequest request) {
-        return service.updateProgress(entryId, request.currentPage(), request.totalPages())
-                .map(ShelfEntryMapper::toResponse)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return ShelfEntryMapper.toResponse(
+                service.updateProgress(entryId, request.currentPage(), request.totalPages()));
     }
 
     @DeleteMapping("/{entryId}")
-    public ResponseEntity<Void> removeBook(
+    @ResponseStatus(org.springframework.http.HttpStatus.NO_CONTENT)
+    public void removeBook(
             @PathVariable Long shelfId,
             @PathVariable Long entryId) {
-        if (service.removeBook(entryId)) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.notFound().build();
+        service.removeBook(entryId);
     }
 }

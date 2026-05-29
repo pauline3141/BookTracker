@@ -1,12 +1,12 @@
 package de.dhbwravensburg.webeng.booktracker.service;
 
+import de.dhbwravensburg.webeng.booktracker.exception.ResourceNotFoundException;
 import de.dhbwravensburg.webeng.booktracker.model.Shelf;
 import de.dhbwravensburg.webeng.booktracker.repository.ShelfRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class ShelfService {
@@ -21,8 +21,9 @@ public class ShelfService {
         return repository.findAll();
     }
 
-    public Optional<Shelf> findById(Long id) {
-        return repository.findById(id);
+    public Shelf getOrThrow(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Shelf", id));
     }
 
     public Shelf create(Shelf shelf) {
@@ -32,20 +33,18 @@ public class ShelfService {
         return repository.save(shelf);
     }
 
-    public Optional<Shelf> update(Long id, Shelf shelf) {
-        return repository.findById(id).map(existing -> {
-            existing.setName(shelf.getName());
-            existing.setDescription(shelf.getDescription());
-            // createdAt bleibt unverändert
-            return repository.save(existing);
-        });
+    public Shelf update(Long id, Shelf shelf) {
+        Shelf existing = getOrThrow(id);
+        existing.setName(shelf.getName());
+        existing.setDescription(shelf.getDescription());
+        // createdAt bleibt unverändert
+        return repository.save(existing);
     }
 
-    public boolean delete(Long id) {
+    public void delete(Long id) {
         if (!repository.existsById(id)) {
-            return false;
+            throw new ResourceNotFoundException("Shelf", id);
         }
         repository.deleteById(id);
-        return true;
     }
 }
