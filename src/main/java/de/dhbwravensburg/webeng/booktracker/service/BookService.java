@@ -1,11 +1,11 @@
 package de.dhbwravensburg.webeng.booktracker.service;
 
+import de.dhbwravensburg.webeng.booktracker.exception.ResourceNotFoundException;
 import de.dhbwravensburg.webeng.booktracker.model.Book;
 import de.dhbwravensburg.webeng.booktracker.repository.BookRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class BookService {
@@ -20,30 +20,29 @@ public class BookService {
         return repository.findAll();
     }
 
-    public Optional<Book> findById(Long id) {
-        return repository.findById(id);
+    public Book getOrThrow(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Book", id));
     }
 
     public Book create(Book book) {
         return repository.save(book);
     }
 
-    public Optional<Book> update(Long id, Book book) {
-        return repository.findById(id).map(existing -> {
-            existing.setTitle(book.getTitle());
-            existing.setAuthor(book.getAuthor());
-            existing.setIsbn(book.getIsbn());
-            existing.setCoverUrl(book.getCoverUrl());
-            existing.setPublishYear(book.getPublishYear());
-            return repository.save(existing);
-        });
+    public Book update(Long id, Book book) {
+        Book existing = getOrThrow(id);
+        existing.setTitle(book.getTitle());
+        existing.setAuthor(book.getAuthor());
+        existing.setIsbn(book.getIsbn());
+        existing.setCoverUrl(book.getCoverUrl());
+        existing.setPublishYear(book.getPublishYear());
+        return repository.save(existing);
     }
 
-    public boolean delete(Long id) {
+    public void delete(Long id) {
         if (!repository.existsById(id)) {
-            return false;
+            throw new ResourceNotFoundException("Book", id);
         }
         repository.deleteById(id);
-        return true;
     }
 }
