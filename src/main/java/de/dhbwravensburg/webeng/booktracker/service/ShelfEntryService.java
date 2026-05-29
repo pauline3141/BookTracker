@@ -1,10 +1,9 @@
 package de.dhbwravensburg.webeng.booktracker.service;
 
 import de.dhbwravensburg.webeng.booktracker.dto.ShelfEntryRequest;
+import de.dhbwravensburg.webeng.booktracker.exception.ResourceNotFoundException;
 import de.dhbwravensburg.webeng.booktracker.mapper.ShelfEntryMapper;
-import de.dhbwravensburg.webeng.booktracker.model.Book;
 import de.dhbwravensburg.webeng.booktracker.model.ReadingStatus;
-import de.dhbwravensburg.webeng.booktracker.model.Shelf;
 import de.dhbwravensburg.webeng.booktracker.model.ShelfEntry;
 import de.dhbwravensburg.webeng.booktracker.repository.BookRepository;
 import de.dhbwravensburg.webeng.booktracker.repository.ShelfEntryRepository;
@@ -12,7 +11,6 @@ import de.dhbwravensburg.webeng.booktracker.repository.ShelfRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class ShelfEntryService {
@@ -33,40 +31,35 @@ public class ShelfEntryService {
         return shelfEntryRepository.findByShelfId(shelfId);
     }
 
-    public Optional<ShelfEntry> addBook(Long shelfId, ShelfEntryRequest request) {
-        Optional<Shelf> shelf = shelfRepository.findById(shelfId);
-        Optional<Book> book = bookRepository.findById(request.bookId());
+    public ShelfEntry addBook(Long shelfId, ShelfEntryRequest request) {
+        var shelf = shelfRepository.findById(shelfId)
+                .orElseThrow(() -> new ResourceNotFoundException("Shelf", shelfId));
+        var book = bookRepository.findById(request.bookId())
+                .orElseThrow(() -> new ResourceNotFoundException("Book", request.bookId()));
 
-        if (shelf.isEmpty() || book.isEmpty()) {
-            return Optional.empty();
-        }
-
-        ShelfEntry entry = ShelfEntryMapper.toEntity(shelf.get(), book.get(), request);
-        return Optional.of(shelfEntryRepository.save(entry));
+        ShelfEntry entry = ShelfEntryMapper.toEntity(shelf, book, request);
+        return shelfEntryRepository.save(entry);
     }
 
-    public Optional<ShelfEntry> updateStatus(Long entryId, ReadingStatus status) {
-        return shelfEntryRepository.findById(entryId).map(entry -> {
-            entry.setStatus(status);
-            return shelfEntryRepository.save(entry);
-        });
+    public ShelfEntry updateStatus(Long entryId, ReadingStatus status) {
+        ShelfEntry entry = shelfEntryRepository.findById(entryId)
+                .orElseThrow(() -> new ResourceNotFoundException("ShelfEntry", entryId));
+        entry.setStatus(status);
+        return shelfEntryRepository.save(entry);
     }
 
-    public Optional<ShelfEntry> updateProgress(Long entryId, int currentPage, int totalPages) {
-        return shelfEntryRepository.findById(entryId).map(entry -> {
-            entry.setCurrentPage(currentPage);
-            if (totalPages > 0) {
-                entry.setTotalPages(totalPages);
-            }
-            return shelfEntryRepository.save(entry);
-        });
+    public ShelfEntry updateProgress(Long entryId, int currentPage, int totalPages) {
+        ShelfEntry entry = shelfEntryRepository.findById(entryId)
+                .orElseThrow(() -> new ResourceNotFoundException("ShelfEntry", entryId));
+        entry.setCurrentPage(currentPage);
+        entry.setTotalPages(totalPages);
+        return shelfEntryRepository.save(entry);
     }
 
-    public boolean removeBook(Long entryId) {
+    public void removeBook(Long entryId) {
         if (!shelfEntryRepository.existsById(entryId)) {
-            return false;
+            throw new ResourceNotFoundException("ShelfEntry", entryId);
         }
         shelfEntryRepository.deleteById(entryId);
-        return true;
     }
 }

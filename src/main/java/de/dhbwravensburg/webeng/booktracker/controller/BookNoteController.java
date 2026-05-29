@@ -39,29 +39,22 @@ public class BookNoteController {
     public ResponseEntity<BookNoteResponse> addNote(
             @PathVariable Long entryId,
             @Valid @RequestBody BookNoteRequest request) {
-        return service.addNote(entryId, request)
-                .map(BookNoteMapper::toResponse)
-                .map(note -> ResponseEntity
-                        .created(URI.create("/api/notes/" + note.id()))
-                        .body(note))
-                .orElse(ResponseEntity.notFound().build());
+        BookNoteResponse note = BookNoteMapper.toResponse(service.addNote(entryId, request));
+        return ResponseEntity
+                .created(URI.create("/api/notes/" + note.id()))
+                .body(note);
     }
 
     @PutMapping("/notes/{noteId}")
-    public ResponseEntity<BookNoteResponse> updateNote(
+    public BookNoteResponse updateNote(
             @PathVariable Long noteId,
             @Valid @RequestBody BookNoteRequest request) {
-        return service.updateNote(noteId, request)
-                .map(BookNoteMapper::toResponse)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return BookNoteMapper.toResponse(service.updateNote(noteId, request));
     }
 
     @DeleteMapping("/notes/{noteId}")
-    public ResponseEntity<Void> deleteNote(@PathVariable Long noteId) {
-        if (service.deleteNote(noteId)) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.notFound().build();
+    @ResponseStatus(org.springframework.http.HttpStatus.NO_CONTENT)
+    public void deleteNote(@PathVariable Long noteId) {
+        service.deleteNote(noteId);
     }
 }

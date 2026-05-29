@@ -1,15 +1,14 @@
 package de.dhbwravensburg.webeng.booktracker.service;
 
 import de.dhbwravensburg.webeng.booktracker.dto.BookNoteRequest;
+import de.dhbwravensburg.webeng.booktracker.exception.ResourceNotFoundException;
 import de.dhbwravensburg.webeng.booktracker.mapper.BookNoteMapper;
 import de.dhbwravensburg.webeng.booktracker.model.BookNote;
-import de.dhbwravensburg.webeng.booktracker.model.ShelfEntry;
 import de.dhbwravensburg.webeng.booktracker.repository.BookNoteRepository;
 import de.dhbwravensburg.webeng.booktracker.repository.ShelfEntryRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class BookNoteService {
@@ -31,29 +30,25 @@ public class BookNoteService {
         return noteRepository.findByIsPublicTrue();
     }
 
-    public Optional<BookNote> addNote(Long shelfEntryId, BookNoteRequest request) {
-        Optional<ShelfEntry> shelfEntry = shelfEntryRepository.findById(shelfEntryId);
-        if (shelfEntry.isEmpty()) {
-            return Optional.empty();
-        }
-        BookNote note = BookNoteMapper.toEntity(shelfEntry.get(), request);
-        return Optional.of(noteRepository.save(note));
+    public BookNote addNote(Long shelfEntryId, BookNoteRequest request) {
+        var shelfEntry = shelfEntryRepository.findById(shelfEntryId)
+                .orElseThrow(() -> new ResourceNotFoundException("ShelfEntry", shelfEntryId));
+        return noteRepository.save(BookNoteMapper.toEntity(shelfEntry, request));
     }
 
-    public Optional<BookNote> updateNote(Long noteId, BookNoteRequest request) {
-        return noteRepository.findById(noteId).map(existing -> {
-            existing.setPageReference(request.pageReference());
-            existing.setContent(request.content());
-            existing.setPublic(request.isPublic());
-            return noteRepository.save(existing);
-        });
+    public BookNote updateNote(Long noteId, BookNoteRequest request) {
+        BookNote existing = noteRepository.findById(noteId)
+                .orElseThrow(() -> new ResourceNotFoundException("BookNote", noteId));
+        existing.setPageReference(request.pageReference());
+        existing.setContent(request.content());
+        existing.setPublic(request.isPublic());
+        return noteRepository.save(existing);
     }
 
-    public boolean deleteNote(Long noteId) {
+    public void deleteNote(Long noteId) {
         if (!noteRepository.existsById(noteId)) {
-            return false;
+            throw new ResourceNotFoundException("BookNote", noteId);
         }
         noteRepository.deleteById(noteId);
-        return true;
     }
 }

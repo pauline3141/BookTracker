@@ -144,3 +144,21 @@ Content-Type: application/json
 
 ### DELETE note
 DELETE http://localhost:8080/api/notes/1
+
+### POST validation error
+POST http://localhost:8080/api/books
+Content-Type: application/json
+
+{
+  "title": "",
+  "author": "",
+  "isbn": "123",
+  "coverUrl": null,
+  "publishYear": 0
+}
+
+### GET 404 with ProblemDetail
+GET http://localhost:8080/api/books/9999
+
+### DELETE 404 with ProblemDetail
+DELETE http://localhost:8080/api/books/9999
