@@ -4,6 +4,8 @@ import de.dhbwravensburg.webeng.booktracker.dto.openlibrary.OpenLibraryDoc;
 import de.dhbwravensburg.webeng.booktracker.dto.openlibrary.OpenLibrarySearchResponse;
 import de.dhbwravensburg.webeng.booktracker.exception.ExternalApiException;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
@@ -20,6 +22,11 @@ public class OpenLibraryService {
         this.openLibraryRestClient = openLibraryRestClient;
     }
 
+    @Retryable(
+            retryFor = ExternalApiException.class,
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 500, multiplier = 2.0)
+    )
     public List<OpenLibraryDoc> search(String query) {
         try {
             OpenLibrarySearchResponse response = openLibraryRestClient.get()
