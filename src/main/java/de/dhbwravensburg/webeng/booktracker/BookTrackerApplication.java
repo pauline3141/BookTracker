@@ -5,7 +5,9 @@ import io.swagger.v3.oas.annotations.info.Contact;
 import io.swagger.v3.oas.annotations.info.Info;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.retry.annotation.EnableRetry;
 
+@EnableRetry
 @OpenAPIDefinition(info = @Info(
         title = "BookTracker API",
         version = "0.1.0",

@@ -35,6 +35,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problem);
     }
 
+    @ExceptionHandler(ExternalApiException.class)
+    public ProblemDetail handleExternalApi(ExternalApiException ex) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_GATEWAY, ex.getMessage());
+        problem.setTitle("Upstream service unavailable");
+        return problem;
+    }
+
     @ExceptionHandler(Exception.class)
     public ProblemDetail handleAnyOther(Exception ex) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(
