@@ -1,7 +1,7 @@
 package de.dhbwravensburg.webeng.booktracker.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 
 public record BookRequest(
@@ -19,6 +19,9 @@ public record BookRequest(
 
         String coverUrl,
 
-        @Positive(message = "publishYear must be positive")
-        int publishYear
+        @PositiveOrZero(message = "publishYear must be zero or positive")
+        int publishYear,
+
+        @PositiveOrZero(message = "totalPages must be zero or positive")
+        int totalPages
 ) {}

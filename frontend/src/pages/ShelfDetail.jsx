@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
-import client from '../api/client'
+import { useParams } from 'react-router-dom'
+import Navbar from '../components/Navbar.jsx'
 import ReadingProgress from '../components/ReadingProgress.jsx'
+import client from '../api/client'
 
 export default function ShelfDetail() {
     const { id } = useParams()
@@ -15,20 +16,29 @@ export default function ShelfDetail() {
 
     return (
         <div>
-            <nav>
-                <Link to="/">Meine Regale</Link>
-                <Link to="/search">Bücher suchen</Link>
-            </nav>
+            <Navbar />
             <div className="container">
                 <h1>{shelf?.name}</h1>
-                <p>{shelf?.description}</p>
+                {shelf?.description && (
+                    <p style={{ color: '#666', marginBottom: '1.5rem' }}>{shelf.description}</p>
+                )}
+                {entries.length === 0 && (
+                    <p style={{ color: '#999' }}>Noch keine Bücher in diesem Regal.</p>
+                )}
                 {entries.map(entry => (
-                    <div key={entry.id} className="card">
-                        <h2>{entry.book.title}</h2>
-                        <p>{entry.book.author}</p>
-                        <ReadingProgress entry={entry} onUpdate={updated =>
-                            setEntries(entries.map(e => e.id === updated.id ? updated : e))
-                        } />
+                    <div key={entry.id} className="card book-card">
+                        {entry.book.coverUrl ? (
+                            <img src={entry.book.coverUrl} alt={entry.book.title} className="book-cover" />
+                        ) : (
+                            <div className="book-cover-placeholder">Kein Cover</div>
+                        )}
+                        <div style={{ flex: 1 }}>
+                            <h2>{entry.book.title}</h2>
+                            <p style={{ color: '#666', fontSize: '0.9rem' }}>{entry.book.author}</p>
+                            <ReadingProgress entry={entry} onUpdate={updated =>
+                                setEntries(entries.map(e => e.id === updated.id ? updated : e))
+                            } />
+                        </div>
                     </div>
                 ))}
             </div>

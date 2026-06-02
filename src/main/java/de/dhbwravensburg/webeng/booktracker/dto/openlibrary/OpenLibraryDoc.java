@@ -11,5 +11,7 @@ public record OpenLibraryDoc(
         @JsonProperty("author_name") List<String> authorName,
         @JsonProperty("isbn") List<String> isbn,
         @JsonProperty("first_publish_year") Integer firstPublishYear,
-        @JsonProperty("cover_i") Integer coverId
+        @JsonProperty("cover_i") Integer coverId,
+        @JsonProperty("number_of_pages_median") Integer numberOfPagesMedian,
+        @JsonProperty("number_of_pages") Integer numberOfPages
 ) {}

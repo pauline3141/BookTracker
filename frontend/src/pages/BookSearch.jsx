@@ -1,25 +1,39 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import Navbar from '../components/Navbar.jsx'
 import client from '../api/client'
 
 export default function BookSearch() {
-    const [query, setQuery] = useState('')
+    const [searchParams] = useSearchParams()
+    const [query, setQuery] = useState(searchParams.get('q') || '')
     const [results, setResults] = useState([])
     const [offset, setOffset] = useState(0)
     const [loading, setLoading] = useState(false)
     const [hasMore, setHasMore] = useState(false)
+    const navigate = useNavigate()
 
-    const search = () => {
-        if (!query.trim()) return
+    useEffect(() => {
+        const q = searchParams.get('q')
+        if (q) {
+            setQuery(q)
+            doSearch(q, 0)
+        }
+    }, [searchParams])
+
+    const doSearch = (q, off) => {
         setLoading(true)
-        setOffset(0)
-        client.get(`/books/search?q=${query}&offset=0`)
+        client.get(`/books/search?q=${q}&offset=${off}`)
             .then(res => {
                 setResults(res.data)
                 setOffset(10)
                 setHasMore(res.data.length === 10)
             })
             .finally(() => setLoading(false))
+    }
+
+    const search = () => {
+        if (!query.trim()) return
+        doSearch(query, 0)
     }
 
     const loadMore = () => {
@@ -33,15 +47,16 @@ export default function BookSearch() {
             .finally(() => setLoading(false))
     }
 
+    const openDetail = (book) => {
+        navigate('/books/detail', { state: { book } })
+    }
+
     return (
         <div>
-            <nav>
-                <Link to="/">Meine Regale</Link>
-                <Link to="/search">Bücher suchen</Link>
-            </nav>
+            <Navbar />
             <div className="container">
                 <h1>Bücher suchen</h1>
-                <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+                <div className="search-bar">
                     <input
                         value={query}
                         onChange={e => setQuery(e.target.value)}
@@ -52,34 +67,28 @@ export default function BookSearch() {
                 </div>
 
                 {results.map((book, i) => (
-                    <div key={i} className="card" style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+                    <div
+                        key={i}
+                        className="card card-clickable book-card"
+                        onClick={() => openDetail(book)}
+                    >
                         {book.coverUrl ? (
-                            <img
-                                src={book.coverUrl}
-                                alt={book.title}
-                                style={{ width: '60px', height: '90px', objectFit: 'cover', borderRadius: '4px' }}
-                            />
+                            <img src={book.coverUrl} alt={book.title} className="book-cover" />
                         ) : (
-                            <div style={{
-                                width: '60px', height: '90px', background: '#ddd',
-                                borderRadius: '4px', display: 'flex',
-                                alignItems: 'center', justifyContent: 'center',
-                                fontSize: '0.7rem', color: '#999', textAlign: 'center'
-                            }}>
-                                Kein Cover
-                            </div>
+                            <div className="book-cover-placeholder">Kein Cover</div>
                         )}
-                        <div>
+                        <div className="book-info">
                             <h2>{book.title}</h2>
                             <p>{book.author}</p>
-                            {book.isbn && <p style={{ color: '#666', fontSize: '0.85rem' }}>ISBN: {book.isbn}</p>}
-                            {book.publishYear && <p style={{ color: '#666', fontSize: '0.85rem' }}>Jahr: {book.publishYear}</p>}
+                            {book.isbn && <p className="book-meta">ISBN: {book.isbn}</p>}
+                            {book.publishYear > 0 && <p className="book-meta">Jahr: {book.publishYear}</p>}
+                            {book.totalPages > 0 && <p className="book-meta">Seiten: {book.totalPages}</p>}
                         </div>
                     </div>
                 ))}
 
                 {hasMore && (
-                    <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+                    <div className="load-more">
                         <button onClick={loadMore} disabled={loading}>
                             {loading ? 'Lädt...' : 'Mehr laden'}
                         </button>

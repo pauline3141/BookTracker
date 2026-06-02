@@ -19,11 +19,11 @@ public class DataSeeder {
         return args -> {
             if (bookRepository.count() == 0) {
                 bookRepository.save(new Book(null, "Der Herr der Ringe", "J.R.R. Tolkien",
-                        "9780544003415", null, 1954));
+                        "9780544003415", null, 1954, 1178));
                 bookRepository.save(new Book(null, "Der Schatten des Windes", "Carlos Ruiz Zafón",
-                        "9783596196159", null, 2001));
+                        "9783596196159", null, 2001, 566));
                 bookRepository.save(new Book(null, "1984", "George Orwell",
-                        "9780451524935", null, 1949));
+                        "9780451524935", null, 1949, 328));
             }
 
             if (shelfRepository.count() == 0) {

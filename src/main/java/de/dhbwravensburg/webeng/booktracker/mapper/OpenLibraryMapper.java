@@ -20,13 +20,21 @@ public final class OpenLibraryMapper {
                 ? "https://covers.openlibrary.org/b/id/" + doc.coverId() + "-M.jpg"
                 : null;
 
+        int totalPages = 0;
+        if (doc.numberOfPagesMedian() != null && doc.numberOfPagesMedian() > 0) {
+            totalPages = doc.numberOfPagesMedian();
+        } else if (doc.numberOfPages() != null && doc.numberOfPages() > 0) {
+            totalPages = doc.numberOfPages();
+        }
+
         return new BookResponse(
                 null,
                 doc.title(),
                 author,
                 isbn,
                 coverUrl,
-                doc.firstPublishYear()
+                doc.firstPublishYear() != null ? doc.firstPublishYear() : 0,
+                totalPages
         );
     }
 }

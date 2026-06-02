@@ -5,6 +5,7 @@ import './index.css'
 import ShelfList from './pages/ShelfList.jsx'
 import ShelfDetail from './pages/ShelfDetail.jsx'
 import BookSearch from './pages/BookSearch.jsx'
+import BookDetail from './pages/BookDetail.jsx'
 
 createRoot(document.getElementById('root')).render(
     <StrictMode>
@@ -13,6 +14,7 @@ createRoot(document.getElementById('root')).render(
                 <Route path="/" element={<ShelfList />} />
                 <Route path="/shelves/:id" element={<ShelfDetail />} />
                 <Route path="/search" element={<BookSearch />} />
+                <Route path="/books/detail" element={<BookDetail />} />
             </Routes>
         </BrowserRouter>
     </StrictMode>
