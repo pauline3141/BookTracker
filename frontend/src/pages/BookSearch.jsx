@@ -5,9 +5,32 @@ import client from '../api/client'
 export default function BookSearch() {
     const [query, setQuery] = useState('')
     const [results, setResults] = useState([])
+    const [offset, setOffset] = useState(0)
+    const [loading, setLoading] = useState(false)
+    const [hasMore, setHasMore] = useState(false)
 
     const search = () => {
-        client.get(`/books/search?q=${query}`).then(res => setResults(res.data))
+        if (!query.trim()) return
+        setLoading(true)
+        setOffset(0)
+        client.get(`/books/search?q=${query}&offset=0`)
+            .then(res => {
+                setResults(res.data)
+                setOffset(10)
+                setHasMore(res.data.length === 10)
+            })
+            .finally(() => setLoading(false))
+    }
+
+    const loadMore = () => {
+        setLoading(true)
+        client.get(`/books/search?q=${query}&offset=${offset}`)
+            .then(res => {
+                setResults(prev => [...prev, ...res.data])
+                setOffset(prev => prev + 10)
+                setHasMore(res.data.length === 10)
+            })
+            .finally(() => setLoading(false))
     }
 
     return (
@@ -27,6 +50,7 @@ export default function BookSearch() {
                     />
                     <button onClick={search}>Suchen</button>
                 </div>
+
                 {results.map((book, i) => (
                     <div key={i} className="card" style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
                         {book.coverUrl ? (
@@ -53,6 +77,14 @@ export default function BookSearch() {
                         </div>
                     </div>
                 ))}
+
+                {hasMore && (
+                    <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+                        <button onClick={loadMore} disabled={loading}>
+                            {loading ? 'Lädt...' : 'Mehr laden'}
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     )

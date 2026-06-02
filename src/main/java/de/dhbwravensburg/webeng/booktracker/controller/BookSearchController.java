@@ -21,8 +21,10 @@ public class BookSearchController {
     }
 
     @GetMapping("/search")
-    public List<BookResponse> search(@RequestParam String q) {
-        return openLibraryService.search(q).stream()
+    public List<BookResponse> search(
+            @RequestParam String q,
+            @RequestParam(defaultValue = "0") int offset) {
+        return openLibraryService.search(q, offset).stream()
                 .map(OpenLibraryMapper::toResponse)
                 .toList();
     }
