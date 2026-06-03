@@ -11,19 +11,30 @@ export default function BookDetail() {
     const [shelves, setShelves] = useState<Shelf[]>([])
     const [selectedShelf, setSelectedShelf] = useState<number | ''>('')
     const [added, setAdded] = useState(false)
+    const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
 
     useEffect(() => {
-        getShelves().then(data => {
-            setShelves(data)
-            if (data.length > 0) setSelectedShelf(data[0].id)
-        })
+        let ignore = false
+        getShelves()
+            .then(data => {
+                if (!ignore) {
+                    setShelves(data)
+                    if (data.length > 0) setSelectedShelf(data[0].id)
+                }
+            })
+            .catch(err => { if (!ignore) setError(err instanceof Error ? err.message : 'Fehler') })
+            .finally(() => { if (!ignore) setLoading(false) })
+        return () => { ignore = true }
     }, [])
 
     if (!book) {
         navigate('/search')
         return null
     }
+
+    if (loading) return <p>Lade Regale ...</p>
+    if (error) return <p className="error">Fehler: {error}</p>
 
     const addToShelf = () => {
         if (!selectedShelf) return
@@ -74,10 +85,7 @@ export default function BookDetail() {
                                 <label style={{ fontSize: '0.85rem', color: '#666', display: 'block', marginBottom: '0.3rem' }}>
                                     Regal
                                 </label>
-                                <select
-                                    value={selectedShelf}
-                                    onChange={e => setSelectedShelf(Number(e.target.value))}
-                                >
+                                <select value={selectedShelf} onChange={e => setSelectedShelf(Number(e.target.value))}>
                                     {shelves.map(shelf => (
                                         <option key={shelf.id} value={shelf.id}>{shelf.name}</option>
                                     ))}

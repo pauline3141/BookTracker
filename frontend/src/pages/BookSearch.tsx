@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import { searchBooks } from '../api/bookTrackerApi'
@@ -14,27 +14,31 @@ export default function BookSearch() {
     const [hasMore, setHasMore] = useState(false)
     const navigate = useNavigate()
 
-    const doSearch = (q: string, off: number) => {
+    const doSearch = useCallback((q: string, off: number) => {
+        let ignore = false
         setLoading(true)
         setError(null)
         searchBooks(q, off)
             .then(data => {
-                if (off === 0) setResults(data)
-                else setResults(prev => [...prev, ...data])
-                setOffset(off + 10)
-                setHasMore(data.length === 10)
+                if (!ignore) {
+                    if (off === 0) setResults(data)
+                    else setResults(prev => [...prev, ...data])
+                    setOffset(off + 10)
+                    setHasMore(data.length === 10)
+                }
             })
-            .catch(err => setError(err instanceof Error ? err.message : 'Fehler'))
-            .finally(() => setLoading(false))
-    }
+            .catch(err => { if (!ignore) setError(err instanceof Error ? err.message : 'Fehler') })
+            .finally(() => { if (!ignore) setLoading(false) })
+        return () => { ignore = true }
+    }, [])
 
     useEffect(() => {
         const q = searchParams.get('q')
         if (q) {
             setQuery(q)
-            doSearch(q, 0)
+            return doSearch(q, 0)
         }
-    }, [searchParams])
+    }, [searchParams, doSearch])
 
     const search = () => {
         if (!query.trim()) return
