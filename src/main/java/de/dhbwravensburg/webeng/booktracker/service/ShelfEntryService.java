@@ -48,6 +48,15 @@ public class ShelfEntryService {
         return shelfEntryRepository.save(entry);
     }
 
+    public ShelfEntry moveToShelf(Long entryId, Long targetShelfId) {
+        ShelfEntry entry = shelfEntryRepository.findById(entryId)
+                .orElseThrow(() -> new ResourceNotFoundException("ShelfEntry", entryId));
+        var targetShelf = shelfRepository.findById(targetShelfId)
+                .orElseThrow(() -> new ResourceNotFoundException("Shelf", targetShelfId));
+        entry.setShelf(targetShelf);
+        return shelfEntryRepository.save(entry);
+    }
+
     public void removeBook(Long entryId) {
         if (!shelfEntryRepository.existsById(entryId)) {
             throw new ResourceNotFoundException("ShelfEntry", entryId);
