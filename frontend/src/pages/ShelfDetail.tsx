@@ -53,6 +53,11 @@ export default function ShelfDetail() {
         setNotes(prev => ({ ...prev, [entryId]: [...(prev[entryId] || []), note] }))
     }
 
+    // Abgeleitete Werte — beim Rendern berechnet, nicht im State
+    const totalBooks = entries.length
+    const booksWithProgress = entries.filter(e => e.currentPage > 0).length
+    const booksFinished = entries.filter(e => e.totalPages > 0 && e.currentPage >= e.totalPages).length
+
     if (loading) return <p>Lade Regal ...</p>
     if (error) return <p className="error">Fehler: {error}</p>
 
@@ -62,8 +67,24 @@ export default function ShelfDetail() {
             <div className="container">
                 <h1>{shelf?.name}</h1>
                 {shelf?.description && (
-                    <p style={{ color: '#666', marginBottom: '1.5rem' }}>{shelf.description}</p>
+                    <p style={{ color: '#666', marginBottom: '1rem' }}>{shelf.description}</p>
                 )}
+
+                <div style={{ display: 'flex', gap: '2rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+                    <div>
+                        <span style={{ fontSize: '1.8rem', fontWeight: 'bold', color: '#3d2b1f' }}>{totalBooks}</span>
+                        <span style={{ fontSize: '0.8rem', color: '#666', display: 'block' }}>Bücher gesamt</span>
+                    </div>
+                    <div>
+                        <span style={{ fontSize: '1.8rem', fontWeight: 'bold', color: '#3d2b1f' }}>{booksWithProgress}</span>
+                        <span style={{ fontSize: '0.8rem', color: '#666', display: 'block' }}>Angefangen</span>
+                    </div>
+                    <div>
+                        <span style={{ fontSize: '1.8rem', fontWeight: 'bold', color: '#3d2b1f' }}>{booksFinished}</span>
+                        <span style={{ fontSize: '0.8rem', color: '#666', display: 'block' }}>Fertig gelesen</span>
+                    </div>
+                </div>
+
                 {entries.length === 0 && (
                     <p style={{ color: '#999' }}>Noch keine Bücher in diesem Regal.</p>
                 )}
