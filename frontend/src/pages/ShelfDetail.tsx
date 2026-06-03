@@ -67,7 +67,6 @@ export default function ShelfDetail() {
             .catch(err => setError(err instanceof Error ? err.message : 'Fehler'))
     }
 
-    // Abgeleitete Werte
     const totalBooks = entries.length
     const booksWithProgress = entries.filter(e => e.currentPage > 0).length
     const booksFinished = entries.filter(e => e.totalPages > 0 && e.currentPage >= e.totalPages).length
