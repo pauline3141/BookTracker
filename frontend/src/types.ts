@@ -41,3 +41,8 @@ export interface BookNoteRequest {
     pageReference: number | null
     isPublic: boolean
 }
+
+export interface NoteFormInput {
+    content: string
+    pageReference: string
+}
