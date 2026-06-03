@@ -3,9 +3,9 @@ package de.dhbwravensburg.webeng.booktracker.controller;
 import de.dhbwravensburg.webeng.booktracker.dto.ShelfEntryRequest;
 import de.dhbwravensburg.webeng.booktracker.dto.ShelfEntryResponse;
 import de.dhbwravensburg.webeng.booktracker.mapper.ShelfEntryMapper;
-import de.dhbwravensburg.webeng.booktracker.model.ReadingStatus;
 import de.dhbwravensburg.webeng.booktracker.service.ShelfEntryService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,8 +21,6 @@ public class ShelfEntryController {
     public ShelfEntryController(ShelfEntryService service) {
         this.service = service;
     }
-
-    public record StatusUpdateRequest(ReadingStatus status) {}
 
     public record ProgressUpdateRequest(int currentPage, int totalPages) {}
 
@@ -43,14 +41,6 @@ public class ShelfEntryController {
                 .body(entry);
     }
 
-    @PatchMapping("/{entryId}")
-    public ShelfEntryResponse updateStatus(
-            @PathVariable Long shelfId,
-            @PathVariable Long entryId,
-            @RequestBody StatusUpdateRequest request) {
-        return ShelfEntryMapper.toResponse(service.updateStatus(entryId, request.status()));
-    }
-
     @PatchMapping("/{entryId}/progress")
     public ShelfEntryResponse updateProgress(
             @PathVariable Long shelfId,
@@ -61,7 +51,7 @@ public class ShelfEntryController {
     }
 
     @DeleteMapping("/{entryId}")
-    @ResponseStatus(org.springframework.http.HttpStatus.NO_CONTENT)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void removeBook(
             @PathVariable Long shelfId,
             @PathVariable Long entryId) {

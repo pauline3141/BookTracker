@@ -3,7 +3,6 @@ package de.dhbwravensburg.webeng.booktracker.mapper;
 import de.dhbwravensburg.webeng.booktracker.dto.ShelfEntryRequest;
 import de.dhbwravensburg.webeng.booktracker.dto.ShelfEntryResponse;
 import de.dhbwravensburg.webeng.booktracker.model.Book;
-import de.dhbwravensburg.webeng.booktracker.model.ReadingStatus;
 import de.dhbwravensburg.webeng.booktracker.model.Shelf;
 import de.dhbwravensburg.webeng.booktracker.model.ShelfEntry;
 
@@ -17,7 +16,6 @@ public final class ShelfEntryMapper {
         ShelfEntry entry = new ShelfEntry();
         entry.setShelf(shelf);
         entry.setBook(book);
-        entry.setStatus(request.status() != null ? request.status() : ReadingStatus.WANT_TO_READ);
         entry.setAddedAt(LocalDateTime.now());
         entry.setCurrentPage(0);
         entry.setTotalPages(request.totalPages());
@@ -29,7 +27,6 @@ public final class ShelfEntryMapper {
                 entry.getId(),
                 entry.getShelf().getId(),
                 BookMapper.toResponse(entry.getBook()),
-                entry.getStatus(),
                 entry.getAddedAt(),
                 entry.getCurrentPage(),
                 entry.getTotalPages()

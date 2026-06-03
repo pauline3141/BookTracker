@@ -23,4 +23,5 @@ public class Book {
     private String isbn;
     private String coverUrl;
     private int publishYear;
+    private int totalPages;
 }

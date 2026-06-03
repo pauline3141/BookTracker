@@ -27,13 +27,14 @@ public class OpenLibraryService {
             maxAttempts = 3,
             backoff = @Backoff(delay = 500, multiplier = 2.0)
     )
-    public List<OpenLibraryDoc> search(String query) {
+    public List<OpenLibraryDoc> search(String query, int offset) {
         try {
             OpenLibrarySearchResponse response = openLibraryRestClient.get()
                     .uri(uriBuilder -> uriBuilder
                             .path("/search.json")
                             .queryParam("q", query)
                             .queryParam("limit", 10)
+                            .queryParam("offset", offset)
                             .build())
                     .retrieve()
                     .onStatus(HttpStatusCode::is4xxClientError, (req, res) -> {

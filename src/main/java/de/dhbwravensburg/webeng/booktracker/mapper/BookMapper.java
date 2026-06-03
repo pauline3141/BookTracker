@@ -15,7 +15,8 @@ public final class BookMapper {
                 request.author(),
                 request.isbn(),
                 request.coverUrl(),
-                request.publishYear()
+                request.publishYear(),
+                request.totalPages()
         );
     }
 
@@ -26,7 +27,8 @@ public final class BookMapper {
                 book.getAuthor(),
                 book.getIsbn(),
                 book.getCoverUrl(),
-                book.getPublishYear()
+                book.getPublishYear(),
+                book.getTotalPages()
         );
     }
 }

@@ -3,7 +3,6 @@ package de.dhbwravensburg.webeng.booktracker.service;
 import de.dhbwravensburg.webeng.booktracker.dto.ShelfEntryRequest;
 import de.dhbwravensburg.webeng.booktracker.exception.ResourceNotFoundException;
 import de.dhbwravensburg.webeng.booktracker.mapper.ShelfEntryMapper;
-import de.dhbwravensburg.webeng.booktracker.model.ReadingStatus;
 import de.dhbwravensburg.webeng.booktracker.model.ShelfEntry;
 import de.dhbwravensburg.webeng.booktracker.repository.BookRepository;
 import de.dhbwravensburg.webeng.booktracker.repository.ShelfEntryRepository;
@@ -38,13 +37,6 @@ public class ShelfEntryService {
                 .orElseThrow(() -> new ResourceNotFoundException("Book", request.bookId()));
 
         ShelfEntry entry = ShelfEntryMapper.toEntity(shelf, book, request);
-        return shelfEntryRepository.save(entry);
-    }
-
-    public ShelfEntry updateStatus(Long entryId, ReadingStatus status) {
-        ShelfEntry entry = shelfEntryRepository.findById(entryId)
-                .orElseThrow(() -> new ResourceNotFoundException("ShelfEntry", entryId));
-        entry.setStatus(status);
         return shelfEntryRepository.save(entry);
     }
 

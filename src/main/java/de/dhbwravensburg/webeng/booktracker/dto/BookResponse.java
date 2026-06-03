@@ -6,5 +6,6 @@ public record BookResponse(
         String author,
         String isbn,
         String coverUrl,
-        int publishYear
+        int publishYear,
+        int totalPages
 ) {}
