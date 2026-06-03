@@ -1,16 +1,32 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import Navbar from '../components/Navbar.jsx'
-import client from '../api/client'
+import Navbar from '../components/Navbar'
+import { searchBooks } from '../api/bookTrackerApi'
+import type { Book } from '../types'
 
 export default function BookSearch() {
     const [searchParams] = useSearchParams()
     const [query, setQuery] = useState(searchParams.get('q') || '')
-    const [results, setResults] = useState([])
+    const [results, setResults] = useState<Book[]>([])
     const [offset, setOffset] = useState(0)
     const [loading, setLoading] = useState(false)
+    const [error, setError] = useState<string | null>(null)
     const [hasMore, setHasMore] = useState(false)
     const navigate = useNavigate()
+
+    const doSearch = (q: string, off: number) => {
+        setLoading(true)
+        setError(null)
+        searchBooks(q, off)
+            .then(data => {
+                if (off === 0) setResults(data)
+                else setResults(prev => [...prev, ...data])
+                setOffset(off + 10)
+                setHasMore(data.length === 10)
+            })
+            .catch(err => setError(err instanceof Error ? err.message : 'Fehler'))
+            .finally(() => setLoading(false))
+    }
 
     useEffect(() => {
         const q = searchParams.get('q')
@@ -20,34 +36,12 @@ export default function BookSearch() {
         }
     }, [searchParams])
 
-    const doSearch = (q, off) => {
-        setLoading(true)
-        client.get(`/books/search?q=${q}&offset=${off}`)
-            .then(res => {
-                setResults(res.data)
-                setOffset(10)
-                setHasMore(res.data.length === 10)
-            })
-            .finally(() => setLoading(false))
-    }
-
     const search = () => {
         if (!query.trim()) return
         doSearch(query, 0)
     }
 
-    const loadMore = () => {
-        setLoading(true)
-        client.get(`/books/search?q=${query}&offset=${offset}`)
-            .then(res => {
-                setResults(prev => [...prev, ...res.data])
-                setOffset(prev => prev + 10)
-                setHasMore(res.data.length === 10)
-            })
-            .finally(() => setLoading(false))
-    }
-
-    const openDetail = (book) => {
+    const openDetail = (book: Book) => {
         navigate('/books/detail', { state: { book } })
     }
 
@@ -65,7 +59,7 @@ export default function BookSearch() {
                     />
                     <button onClick={search}>Suchen</button>
                 </div>
-
+                {error && <p className="error">Fehler: {error}</p>}
                 {results.map((book, i) => (
                     <div
                         key={i}
@@ -86,10 +80,9 @@ export default function BookSearch() {
                         </div>
                     </div>
                 ))}
-
                 {hasMore && (
                     <div className="load-more">
-                        <button onClick={loadMore} disabled={loading}>
+                        <button onClick={() => doSearch(query, offset)} disabled={loading}>
                             {loading ? 'Lädt...' : 'Mehr laden'}
                         </button>
                     </div>

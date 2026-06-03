@@ -1,20 +1,22 @@
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import Navbar from '../components/Navbar.jsx'
-import client from '../api/client'
+import Navbar from '../components/Navbar'
+import { getShelves, createBook, addEntry } from '../api/bookTrackerApi'
+import type { Shelf, Book } from '../types'
 
 export default function BookDetail() {
     const { state } = useLocation()
     const navigate = useNavigate()
-    const book = state?.book
-    const [shelves, setShelves] = useState([])
-    const [selectedShelf, setSelectedShelf] = useState('')
+    const book = state?.book as Book | undefined
+    const [shelves, setShelves] = useState<Shelf[]>([])
+    const [selectedShelf, setSelectedShelf] = useState<number | ''>('')
     const [added, setAdded] = useState(false)
+    const [error, setError] = useState<string | null>(null)
 
     useEffect(() => {
-        client.get('/shelves').then(res => {
-            setShelves(res.data)
-            if (res.data.length > 0) setSelectedShelf(res.data[0].id)
+        getShelves().then(data => {
+            setShelves(data)
+            if (data.length > 0) setSelectedShelf(data[0].id)
         })
     }, [])
 
@@ -24,20 +26,18 @@ export default function BookDetail() {
     }
 
     const addToShelf = () => {
-        client.post('/books', {
+        if (!selectedShelf) return
+        createBook({
             title: book.title,
             author: book.author,
             isbn: book.isbn,
             coverUrl: book.coverUrl,
             publishYear: book.publishYear ?? 0,
             totalPages: book.totalPages ?? 0
-        }).then(res => {
-            const bookId = res.data.id
-            return client.post(`/shelves/${selectedShelf}/entries`, {
-                bookId,
-                totalPages: res.data.totalPages
-            })
-        }).then(() => setAdded(true))
+        })
+            .then(saved => addEntry(selectedShelf as number, saved.id as number, saved.totalPages))
+            .then(() => setAdded(true))
+            .catch(err => setError(err instanceof Error ? err.message : 'Fehler'))
     }
 
     return (
@@ -52,8 +52,7 @@ export default function BookDetail() {
                         <img src={book.coverUrl} alt={book.title}
                              style={{ width: '120px', height: '180px', objectFit: 'cover', borderRadius: '6px' }} />
                     ) : (
-                        <div className="book-cover-placeholder"
-                             style={{ width: '120px', height: '180px' }}>Kein Cover</div>
+                        <div className="book-cover-placeholder" style={{ width: '120px', height: '180px' }}>Kein Cover</div>
                     )}
                     <div style={{ flex: 1 }}>
                         <h1 style={{ fontSize: '1.5rem' }}>{book.title}</h1>
@@ -66,6 +65,7 @@ export default function BookDetail() {
 
                 <div className="card" style={{ marginTop: '1.5rem' }}>
                     <h2>Ins Regal legen</h2>
+                    {error && <p className="error">Fehler: {error}</p>}
                     {added ? (
                         <p style={{ color: '#1e8449', marginTop: '0.5rem' }}>✓ Erfolgreich hinzugefügt!</p>
                     ) : (
@@ -74,7 +74,10 @@ export default function BookDetail() {
                                 <label style={{ fontSize: '0.85rem', color: '#666', display: 'block', marginBottom: '0.3rem' }}>
                                     Regal
                                 </label>
-                                <select value={selectedShelf} onChange={e => setSelectedShelf(e.target.value)}>
+                                <select
+                                    value={selectedShelf}
+                                    onChange={e => setSelectedShelf(Number(e.target.value))}
+                                >
                                     {shelves.map(shelf => (
                                         <option key={shelf.id} value={shelf.id}>{shelf.name}</option>
                                     ))}

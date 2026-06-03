@@ -1,25 +1,37 @@
 import { useState } from 'react'
-import client from '../api/client'
+import { addNote } from '../api/bookTrackerApi'
+import type { BookNote } from '../types'
 
-export default function NoteForm({ entryId, onAdd }) {
+type NoteFormProps = {
+    entryId: number
+    onAdd: (note: BookNote) => void
+}
+
+export default function NoteForm({ entryId, onAdd }: NoteFormProps) {
     const [content, setContent] = useState('')
     const [pageReference, setPageReference] = useState('')
+    const [error, setError] = useState<string | null>(null)
 
     const submit = () => {
-        client.post(`/entries/${entryId}/notes`, {
+        if (!content.trim()) return
+        addNote(entryId, {
             content,
             pageReference: pageReference ? Number(pageReference) : null,
             isPublic: false
-        }).then(res => {
-            onAdd(res.data)
-            setContent('')
-            setPageReference('')
         })
+            .then(note => {
+                onAdd(note)
+                setContent('')
+                setPageReference('')
+                setError(null)
+            })
+            .catch(err => setError(err instanceof Error ? err.message : 'Fehler'))
     }
 
     return (
         <div style={{ marginTop: '1rem' }}>
             <h3>Notiz hinzufügen</h3>
+            {error && <p className="error">Fehler: {error}</p>}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 <input
                     type="number"

@@ -1,25 +1,30 @@
 import { useState } from 'react'
-import client from '../api/client'
+import { updateProgress } from '../api/bookTrackerApi'
+import type { ShelfEntry } from '../types'
 
-export default function ReadingProgress({ entry, onUpdate }) {
+type ReadingProgressProps = {
+    entry: ShelfEntry
+    onUpdate: (updated: ShelfEntry) => void
+}
+
+export default function ReadingProgress({ entry, onUpdate }: ReadingProgressProps) {
     const [currentPage, setCurrentPage] = useState(entry.currentPage ?? 0)
     const [totalPages, setTotalPages] = useState(
         entry.totalPages > 0 ? entry.totalPages : (entry.book?.totalPages ?? 0)
     )
 
     const save = () => {
-        client.patch(`/shelves/${entry.shelfId}/entries/${entry.id}/progress`, {
-            currentPage,
-            totalPages
-        }).then(res => onUpdate(res.data))
+        updateProgress(entry.shelfId, entry.id, currentPage, totalPages)
+            .then(updated => onUpdate(updated))
+            .catch(err => console.error(err))
     }
 
-    const handleCurrentPage = (value) => {
+    const handleCurrentPage = (value: string) => {
         const val = Math.max(0, Math.min(Number(value), totalPages))
         setCurrentPage(val)
     }
 
-    const handleTotalPages = (value) => {
+    const handleTotalPages = (value: string) => {
         const val = Math.max(0, Number(value))
         setTotalPages(val)
         if (currentPage > val) setCurrentPage(val)
