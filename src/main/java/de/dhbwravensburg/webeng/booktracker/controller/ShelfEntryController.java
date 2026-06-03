@@ -23,6 +23,7 @@ public class ShelfEntryController {
     }
 
     public record ProgressUpdateRequest(int currentPage, int totalPages) {}
+    public record MoveRequest(Long targetShelfId) {}
 
     @GetMapping
     public List<ShelfEntryResponse> getAll(@PathVariable Long shelfId) {
@@ -48,6 +49,15 @@ public class ShelfEntryController {
             @RequestBody ProgressUpdateRequest request) {
         return ShelfEntryMapper.toResponse(
                 service.updateProgress(entryId, request.currentPage(), request.totalPages()));
+    }
+
+    @PatchMapping("/{entryId}/move")
+    public ShelfEntryResponse moveToShelf(
+            @PathVariable Long shelfId,
+            @PathVariable Long entryId,
+            @RequestBody MoveRequest request) {
+        return ShelfEntryMapper.toResponse(
+                service.moveToShelf(entryId, request.targetShelfId()));
     }
 
     @DeleteMapping("/{entryId}")

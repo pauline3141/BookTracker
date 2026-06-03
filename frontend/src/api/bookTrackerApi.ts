@@ -9,7 +9,6 @@ async function handle<T>(response: Response): Promise<T> {
     return (await response.json()) as T
 }
 
-// Shelves
 export function getShelves(): Promise<Shelf[]> {
     return fetch(`${BASE}/shelves`).then(res => handle<Shelf[]>(res))
 }
@@ -26,7 +25,6 @@ export function getShelf(id: number): Promise<Shelf> {
     return fetch(`${BASE}/shelves/${id}`).then(res => handle<Shelf>(res))
 }
 
-// ShelfEntries
 export function getEntries(shelfId: number): Promise<ShelfEntry[]> {
     return fetch(`${BASE}/shelves/${shelfId}/entries`).then(res => handle<ShelfEntry[]>(res))
 }
@@ -47,7 +45,22 @@ export function updateProgress(shelfId: number, entryId: number, currentPage: nu
     }).then(res => handle<ShelfEntry>(res))
 }
 
-// Books
+export function moveEntry(shelfId: number, entryId: number, targetShelfId: number): Promise<ShelfEntry> {
+    return fetch(`${BASE}/shelves/${shelfId}/entries/${entryId}/move`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ targetShelfId })
+    }).then(res => handle<ShelfEntry>(res))
+}
+
+export function removeEntry(shelfId: number, entryId: number): Promise<void> {
+    return fetch(`${BASE}/shelves/${shelfId}/entries/${entryId}`, {
+        method: 'DELETE'
+    }).then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    })
+}
+
 export function createBook(book: Omit<Book, 'id'>): Promise<Book> {
     return fetch(`${BASE}/books`, {
         method: 'POST',
@@ -61,7 +74,6 @@ export function searchBooks(query: string, offset: number): Promise<Book[]> {
         .then(res => handle<Book[]>(res))
 }
 
-// Notes
 export function getNotes(entryId: number): Promise<BookNote[]> {
     return fetch(`${BASE}/entries/${entryId}/notes`).then(res => handle<BookNote[]>(res))
 }

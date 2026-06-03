@@ -3,13 +3,14 @@ import { useParams } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import ReadingProgress from '../components/ReadingProgress'
 import NoteForm from '../components/NoteForm'
-import { getShelf, getEntries, getNotes } from '../api/bookTrackerApi'
+import { getShelf, getEntries, getNotes, removeEntry, moveEntry, getShelves } from '../api/bookTrackerApi'
 import type { Shelf, ShelfEntry, BookNote } from '../types'
 
 export default function ShelfDetail() {
     const { id } = useParams<{ id: string }>()
     const [shelf, setShelf] = useState<Shelf | null>(null)
     const [entries, setEntries] = useState<ShelfEntry[]>([])
+    const [allShelves, setAllShelves] = useState<Shelf[]>([])
     const [notes, setNotes] = useState<Record<number, BookNote[]>>({})
     const [expandedEntry, setExpandedEntry] = useState<number | null>(null)
     const [loading, setLoading] = useState(true)
@@ -19,11 +20,12 @@ export default function ShelfDetail() {
 
     const load = useCallback(() => {
         let ignore = false
-        Promise.all([getShelf(shelfId), getEntries(shelfId)])
-            .then(([shelfData, entriesData]) => {
+        Promise.all([getShelf(shelfId), getEntries(shelfId), getShelves()])
+            .then(([shelfData, entriesData, shelvesData]) => {
                 if (!ignore) {
                     setShelf(shelfData)
                     setEntries(entriesData)
+                    setAllShelves(shelvesData.filter(s => s.id !== shelfId))
                     setError(null)
                 }
             })
@@ -53,7 +55,19 @@ export default function ShelfDetail() {
         setNotes(prev => ({ ...prev, [entryId]: [...(prev[entryId] || []), note] }))
     }
 
-    // Abgeleitete Werte — beim Rendern berechnet, nicht im State
+    const handleRemove = (entryId: number) => {
+        removeEntry(shelfId, entryId)
+            .then(() => setEntries(prev => prev.filter(e => e.id !== entryId)))
+            .catch(err => setError(err instanceof Error ? err.message : 'Fehler'))
+    }
+
+    const handleMove = (entryId: number, targetShelfId: number) => {
+        moveEntry(shelfId, entryId, targetShelfId)
+            .then(() => setEntries(prev => prev.filter(e => e.id !== entryId)))
+            .catch(err => setError(err instanceof Error ? err.message : 'Fehler'))
+    }
+
+    // Abgeleitete Werte
     const totalBooks = entries.length
     const booksWithProgress = entries.filter(e => e.currentPage > 0).length
     const booksFinished = entries.filter(e => e.totalPages > 0 && e.currentPage >= e.totalPages).length
@@ -103,13 +117,36 @@ export default function ShelfDetail() {
                                     entry={entry}
                                     onUpdate={updated => setEntries(entries.map(e => e.id === updated.id ? updated : e))}
                                 />
-                                <button
-                                    className="secondary"
-                                    style={{ marginTop: '0.75rem', fontSize: '0.8rem' }}
-                                    onClick={() => loadNotes(entry.id)}
-                                >
-                                    {expandedEntry === entry.id ? 'Notizen ausblenden' : 'Notizen anzeigen'}
-                                </button>
+                                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                                    <button
+                                        className="secondary"
+                                        style={{ fontSize: '0.8rem' }}
+                                        onClick={() => loadNotes(entry.id)}
+                                    >
+                                        {expandedEntry === entry.id ? 'Notizen ausblenden' : 'Notizen anzeigen'}
+                                    </button>
+                                    {allShelves.length > 0 && (
+                                        <select
+                                            style={{ fontSize: '0.8rem', padding: '0.3rem 0.5rem' }}
+                                            defaultValue=""
+                                            onChange={e => {
+                                                if (e.target.value) handleMove(entry.id, Number(e.target.value))
+                                            }}
+                                        >
+                                            <option value="" disabled>Verschieben nach...</option>
+                                            {allShelves.map(s => (
+                                                <option key={s.id} value={s.id}>{s.name}</option>
+                                            ))}
+                                        </select>
+                                    )}
+                                    <button
+                                        className="danger"
+                                        style={{ fontSize: '0.8rem' }}
+                                        onClick={() => handleRemove(entry.id)}
+                                    >
+                                        Entfernen
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         {expandedEntry === entry.id && (
