@@ -37,7 +37,6 @@ public class ShelfService {
         Shelf existing = getOrThrow(id);
         existing.setName(shelf.getName());
         existing.setDescription(shelf.getDescription());
-        // createdAt bleibt unverändert
         return repository.save(existing);
     }
 
