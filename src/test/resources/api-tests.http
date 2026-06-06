@@ -168,3 +168,21 @@ GET http://localhost:8080/api/books/search?q=tolkien
 
 ### Open Library unknown book
 GET http://localhost:8080/api/books/search?q=xyzxyzxyznotabook123
+
+### Register
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "test",
+  "password": "secret123"
+}
+
+### Login
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "test",
+  "password": "secret123"
+}
