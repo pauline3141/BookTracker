@@ -1,11 +1,14 @@
 package de.dhbwravensburg.webeng.booktracker.controller;
 
 import de.dhbwravensburg.webeng.booktracker.exception.ResourceNotFoundException;
-import de.dhbwravensburg.webeng.booktracker.mapper.BookMapper;
 import de.dhbwravensburg.webeng.booktracker.model.Book;
+import de.dhbwravensburg.webeng.booktracker.security.JwtAuthFilter;
+import de.dhbwravensburg.webeng.booktracker.security.JwtUtil;
 import de.dhbwravensburg.webeng.booktracker.service.BookService;
+import de.dhbwravensburg.webeng.booktracker.service.OpenLibraryService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -17,6 +20,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(BookController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class BookControllerTest {
 
     @Autowired
@@ -26,7 +30,13 @@ class BookControllerTest {
     private BookService bookService;
 
     @MockitoBean
-    private de.dhbwravensburg.webeng.booktracker.service.OpenLibraryService openLibraryService;
+    private OpenLibraryService openLibraryService;
+
+    @MockitoBean
+    private JwtUtil jwtUtil;
+
+    @MockitoBean
+    private JwtAuthFilter jwtAuthFilter;
 
     @Test
     void getAll_returns200WithBooks() throws Exception {
