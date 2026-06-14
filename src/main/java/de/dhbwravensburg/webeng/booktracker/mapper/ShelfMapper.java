@@ -15,7 +15,8 @@ public final class ShelfMapper {
                 id,
                 request.name(),
                 request.description(),
-                LocalDateTime.now()
+                LocalDateTime.now(),
+                null
         );
     }
 
