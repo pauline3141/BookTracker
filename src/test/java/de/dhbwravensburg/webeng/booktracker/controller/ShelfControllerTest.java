@@ -2,9 +2,13 @@ package de.dhbwravensburg.webeng.booktracker.controller;
 
 import de.dhbwravensburg.webeng.booktracker.exception.ResourceNotFoundException;
 import de.dhbwravensburg.webeng.booktracker.model.Shelf;
+import de.dhbwravensburg.webeng.booktracker.model.User;
+import de.dhbwravensburg.webeng.booktracker.security.JwtAuthFilter;
+import de.dhbwravensburg.webeng.booktracker.security.JwtUtil;
 import de.dhbwravensburg.webeng.booktracker.service.ShelfService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -17,6 +21,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(ShelfController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class ShelfControllerTest {
 
     @Autowired
@@ -25,9 +30,16 @@ class ShelfControllerTest {
     @MockitoBean
     private ShelfService shelfService;
 
+    @MockitoBean
+    private JwtUtil jwtUtil;
+
+    @MockitoBean
+    private JwtAuthFilter jwtAuthFilter;
+
     @Test
     void getAll_returns200WithShelves() throws Exception {
-        Shelf shelf = new Shelf(1L, "Wunschliste", "Meine Wunschliste", LocalDateTime.now());
+        User user = new User(1L, "pauline", "secret");
+        Shelf shelf = new Shelf(1L, "Wunschliste", "Meine Wunschliste", LocalDateTime.now(), user);
         when(shelfService.findAll()).thenReturn(List.of(shelf));
 
         mockMvc.perform(get("/api/shelves"))

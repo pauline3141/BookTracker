@@ -3,7 +3,9 @@ import { useState } from 'react'
 
 export default function Navbar() {
     const [query, setQuery] = useState('')
+    const [showLogout, setShowLogout] = useState(false)
     const navigate = useNavigate()
+    const username = localStorage.getItem('username')
 
     const search = (e: React.FormEvent) => {
         e.preventDefault()
@@ -11,6 +13,14 @@ export default function Navbar() {
             navigate(`/search?q=${encodeURIComponent(query)}`)
         }
     }
+
+    const logout = () => {
+        localStorage.removeItem('token')
+        localStorage.removeItem('username')
+        navigate('/login')
+    }
+
+    const wider = username && username.length > 'Logout'.length ? username : 'Logout'
 
     return (
         <nav className="navbar">
@@ -33,6 +43,34 @@ export default function Navbar() {
                         </svg>
                     </button>
                 </form>
+                {username && (
+                    <span
+                        onClick={showLogout ? logout : undefined}
+                        onMouseEnter={() => setShowLogout(true)}
+                        onMouseLeave={() => setShowLogout(false)}
+                        style={{
+                            position: 'relative',
+                            display: 'inline-flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            color: showLogout ? '#e74c3c' : '#d4b896',
+                            fontSize: '0.85rem',
+                            cursor: showLogout ? 'pointer' : 'default',
+                            transition: 'color 0.2s, border-color 0.2s',
+                            userSelect: 'none' as const,
+                            border: `1px solid ${showLogout ? '#e74c3c' : '#d4b896'}`,
+                            borderRadius: '4px',
+                            padding: '0.25rem 0.6rem',
+                        }}
+                    >
+            <span style={{ visibility: 'hidden', pointerEvents: 'none' }}>
+              {wider}
+            </span>
+            <span style={{ position: 'absolute' }}>
+              {showLogout ? 'Logout' : username}
+            </span>
+          </span>
+                )}
             </div>
         </nav>
     )

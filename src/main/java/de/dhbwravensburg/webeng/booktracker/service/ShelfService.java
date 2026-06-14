@@ -2,7 +2,10 @@ package de.dhbwravensburg.webeng.booktracker.service;
 
 import de.dhbwravensburg.webeng.booktracker.exception.ResourceNotFoundException;
 import de.dhbwravensburg.webeng.booktracker.model.Shelf;
+import de.dhbwravensburg.webeng.booktracker.model.User;
 import de.dhbwravensburg.webeng.booktracker.repository.ShelfRepository;
+import de.dhbwravensburg.webeng.booktracker.repository.UserRepository;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -12,17 +15,25 @@ import java.util.List;
 public class ShelfService {
 
     private final ShelfRepository repository;
+    private final UserRepository userRepository;
 
-    public ShelfService(ShelfRepository repository) {
+    public ShelfService(ShelfRepository repository, UserRepository userRepository) {
         this.repository = repository;
+        this.userRepository = userRepository;
+    }
+
+    private User getCurrentUser() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User", 0L));
     }
 
     public List<Shelf> findAll() {
-        return repository.findAll();
+        return repository.findByUserId(getCurrentUser().getId());
     }
 
     public Shelf getOrThrow(Long id) {
-        return repository.findById(id)
+        return repository.findByIdAndUserId(id, getCurrentUser().getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Shelf", id));
     }
 
@@ -30,6 +41,7 @@ public class ShelfService {
         if (shelf.getCreatedAt() == null) {
             shelf.setCreatedAt(LocalDateTime.now());
         }
+        shelf.setUser(getCurrentUser());
         return repository.save(shelf);
     }
 
@@ -41,7 +53,7 @@ public class ShelfService {
     }
 
     public void delete(Long id) {
-        if (!repository.existsById(id)) {
+        if (!repository.existsByIdAndUserId(id, getCurrentUser().getId())) {
             throw new ResourceNotFoundException("Shelf", id);
         }
         repository.deleteById(id);
