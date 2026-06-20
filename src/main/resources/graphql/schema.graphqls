@@ -1,0 +1,35 @@
+type Query {
+    shelves: [Shelf!]!
+    shelf(id: ID!): Shelf
+    searchBooks(query: String!, offset: Int = 0): [Book!]!
+}
+
+type Mutation {
+    createShelf(name: String!, description: String): Shelf!
+}
+
+type Shelf {
+    id: ID!
+    name: String!
+    description: String
+    createdAt: String
+    entries: [ShelfEntry!]!
+}
+
+type ShelfEntry {
+    id: ID!
+    book: Book!
+    addedAt: String
+    currentPage: Int!
+    totalPages: Int!
+}
+
+type Book {
+    id: ID
+    title: String!
+    author: String!
+    isbn: String
+    coverUrl: String
+    publishYear: Int
+    totalPages: Int
+}

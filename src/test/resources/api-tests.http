@@ -174,7 +174,7 @@ POST http://localhost:8080/api/auth/register
 Content-Type: application/json
 
 {
-  "username": "test",
+  "username": "test1234",
   "password": "secret123"
 }
 
@@ -183,6 +183,6 @@ POST http://localhost:8080/api/auth/login
 Content-Type: application/json
 
 {
-  "username": "test",
+  "username": "test1234",
   "password": "secret123"
 }
