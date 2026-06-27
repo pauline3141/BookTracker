@@ -8,6 +8,4 @@ import java.util.List;
 public interface BookNoteRepository extends JpaRepository<BookNote, Long> {
 
     List<BookNote> findByShelfEntryId(Long shelfEntryId);
-
-    List<BookNote> findByIsPublicTrue();
 }

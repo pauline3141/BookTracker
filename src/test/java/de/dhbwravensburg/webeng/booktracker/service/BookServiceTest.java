@@ -85,7 +85,7 @@ class BookServiceTest {
     @Test
     void delete_removesNotesAndEntriesBeforeDeletingBook_whenFound() {
         ShelfEntry entry = new ShelfEntry(5L, null, null, null, 0, 0);
-        BookNote note = new BookNote(10L, entry, 5, "Test", false, LocalDateTime.now());
+        BookNote note = new BookNote(10L, entry, 5, "Test", LocalDateTime.now());
         when(repository.existsById(1L)).thenReturn(true);
         when(shelfEntryRepository.findByBookId(1L)).thenReturn(List.of(entry));
         when(bookNoteRepository.findByShelfEntryId(5L)).thenReturn(List.of(note));

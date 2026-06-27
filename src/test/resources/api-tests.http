@@ -191,10 +191,6 @@ Content-Type: application/json
 GET http://localhost:8080/api/entries/{{entryId}}/notes
 Authorization: Bearer {{authToken}}
 
-### GET all public notes
-GET http://localhost:8080/api/notes/public
-Authorization: Bearer {{authToken}}
-
 ### POST notes with page reference
 # @name createNote
 POST http://localhost:8080/api/entries/{{entryId}}/notes
@@ -203,8 +199,7 @@ Content-Type: application/json
 
 {
   "pageReference": 150,
-  "content": "Starke Wendung auf dieser Seite",
-  "isPublic": false
+  "content": "Starke Wendung auf dieser Seite"
 }
 
 > {%
@@ -218,8 +213,7 @@ Content-Type: application/json
 
 {
   "pageReference": null,
-  "content": "Insgesamt ein großartiges Buch",
-  "isPublic": true
+  "content": "Insgesamt ein großartiges Buch"
 }
 
 ### PUT update note
@@ -229,8 +223,7 @@ Content-Type: application/json
 
 {
   "pageReference": 200,
-  "content": "Korrigierte Notiz",
-  "isPublic": true
+  "content": "Korrigierte Notiz"
 }
 
 ### DELETE note

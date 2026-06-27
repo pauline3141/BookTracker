@@ -119,7 +119,7 @@ class ShelfServiceTest {
         User user = new User(1L, "testuser", "secret");
         mockCurrentUser(user);
         ShelfEntry entry = new ShelfEntry(5L, null, null, null, 0, 0);
-        BookNote note = new BookNote(10L, entry, 5, "Test", false, LocalDateTime.now());
+        BookNote note = new BookNote(10L, entry, 5, "Test", LocalDateTime.now());
         when(repository.existsByIdAndUserId(1L, 1L)).thenReturn(true);
         when(shelfEntryRepository.findByShelfId(1L)).thenReturn(List.of(entry));
         when(bookNoteRepository.findByShelfEntryId(5L)).thenReturn(List.of(note));
