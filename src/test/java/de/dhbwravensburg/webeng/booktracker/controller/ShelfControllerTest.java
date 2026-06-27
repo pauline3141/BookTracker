@@ -38,7 +38,7 @@ class ShelfControllerTest {
 
     @Test
     void getAll_returns200WithShelves() throws Exception {
-        User user = new User(1L, "pauline", "secret");
+        User user = new User(1L, "testuser", "secret");
         Shelf shelf = new Shelf(1L, "Wunschliste", "Meine Wunschliste", LocalDateTime.now(), user);
         when(shelfService.findAll()).thenReturn(List.of(shelf));
 

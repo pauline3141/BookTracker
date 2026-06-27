@@ -4,6 +4,7 @@ import de.dhbwravensburg.webeng.booktracker.exception.InvalidUserContextExceptio
 import de.dhbwravensburg.webeng.booktracker.exception.ResourceNotFoundException;
 import de.dhbwravensburg.webeng.booktracker.model.Shelf;
 import de.dhbwravensburg.webeng.booktracker.model.User;
+import de.dhbwravensburg.webeng.booktracker.repository.ShelfEntryRepository;
 import de.dhbwravensburg.webeng.booktracker.repository.ShelfRepository;
 import de.dhbwravensburg.webeng.booktracker.repository.UserRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -17,10 +18,14 @@ public class ShelfService {
 
     private final ShelfRepository repository;
     private final UserRepository userRepository;
+    private final ShelfEntryRepository shelfEntryRepository;
 
-    public ShelfService(ShelfRepository repository, UserRepository userRepository) {
+    public ShelfService(ShelfRepository repository,
+                        UserRepository userRepository,
+                        ShelfEntryRepository shelfEntryRepository) {
         this.repository = repository;
         this.userRepository = userRepository;
+        this.shelfEntryRepository = shelfEntryRepository;
     }
 
     private User getCurrentUser() {
@@ -57,6 +62,7 @@ public class ShelfService {
         if (!repository.existsByIdAndUserId(id, getCurrentUser().getId())) {
             throw new ResourceNotFoundException("Shelf", id);
         }
+        shelfEntryRepository.deleteAll(shelfEntryRepository.findByShelfId(id));
         repository.deleteById(id);
     }
 }
