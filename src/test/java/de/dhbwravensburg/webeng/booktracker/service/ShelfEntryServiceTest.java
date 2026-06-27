@@ -9,7 +9,6 @@ import de.dhbwravensburg.webeng.booktracker.model.ShelfEntry;
 import de.dhbwravensburg.webeng.booktracker.repository.BookNoteRepository;
 import de.dhbwravensburg.webeng.booktracker.repository.BookRepository;
 import de.dhbwravensburg.webeng.booktracker.repository.ShelfEntryRepository;
-import de.dhbwravensburg.webeng.booktracker.repository.ShelfRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -32,13 +31,13 @@ class ShelfEntryServiceTest {
     private ShelfEntryRepository shelfEntryRepository;
 
     @Mock
-    private ShelfRepository shelfRepository;
-
-    @Mock
     private BookRepository bookRepository;
 
     @Mock
     private BookNoteRepository bookNoteRepository;
+
+    @Mock
+    private ShelfService shelfService;
 
     @InjectMocks
     private ShelfEntryService service;
@@ -46,7 +45,8 @@ class ShelfEntryServiceTest {
     @Test
     void addBook_throwsResourceNotFoundException_whenShelfMissing() {
         ShelfEntryRequest request = new ShelfEntryRequest(1L, 0);
-        when(shelfRepository.findById(99L)).thenReturn(Optional.empty());
+        when(shelfService.getOrThrow(99L))
+                .thenThrow(new ResourceNotFoundException("Shelf", 99L));
 
         assertThatThrownBy(() -> service.addBook(99L, request))
                 .isInstanceOf(ResourceNotFoundException.class)
@@ -58,7 +58,7 @@ class ShelfEntryServiceTest {
     void addBook_throwsResourceNotFoundException_whenBookMissing() {
         Shelf shelf = new Shelf(1L, "Wunschliste", null, null, null);
         ShelfEntryRequest request = new ShelfEntryRequest(99L, 0);
-        when(shelfRepository.findById(1L)).thenReturn(Optional.of(shelf));
+        when(shelfService.getOrThrow(1L)).thenReturn(shelf);
         when(bookRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.addBook(1L, request))
@@ -72,7 +72,7 @@ class ShelfEntryServiceTest {
         Shelf shelf = new Shelf(1L, "Wunschliste", null, null, null);
         Book book = new Book(2L, "1984", "George Orwell", null, null, 1949, 328);
         ShelfEntryRequest request = new ShelfEntryRequest(2L, 328);
-        when(shelfRepository.findById(1L)).thenReturn(Optional.of(shelf));
+        when(shelfService.getOrThrow(1L)).thenReturn(shelf);
         when(bookRepository.findById(2L)).thenReturn(Optional.of(book));
         when(shelfEntryRepository.save(any(ShelfEntry.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -94,8 +94,10 @@ class ShelfEntryServiceTest {
 
     @Test
     void updateProgress_updatesPages_whenEntryExists() {
-        ShelfEntry entry = new ShelfEntry(1L, null, null, null, 0, 0);
+        Shelf shelf = new Shelf(1L, "Wunschliste", null, null, null);
+        ShelfEntry entry = new ShelfEntry(1L, shelf, null, null, 0, 0);
         when(shelfEntryRepository.findById(1L)).thenReturn(Optional.of(entry));
+        when(shelfService.getOrThrow(1L)).thenReturn(shelf);
         when(shelfEntryRepository.save(any(ShelfEntry.class))).thenAnswer(inv -> inv.getArgument(0));
 
         ShelfEntry result = service.updateProgress(1L, 100, 300);
@@ -106,9 +108,12 @@ class ShelfEntryServiceTest {
 
     @Test
     void moveToShelf_throwsResourceNotFoundException_whenTargetShelfMissing() {
-        ShelfEntry entry = new ShelfEntry(1L, null, null, null, 0, 0);
+        Shelf shelf = new Shelf(1L, "Wunschliste", null, null, null);
+        ShelfEntry entry = new ShelfEntry(1L, shelf, null, null, 0, 0);
         when(shelfEntryRepository.findById(1L)).thenReturn(Optional.of(entry));
-        when(shelfRepository.findById(99L)).thenReturn(Optional.empty());
+        when(shelfService.getOrThrow(1L)).thenReturn(shelf);
+        when(shelfService.getOrThrow(99L))
+                .thenThrow(new ResourceNotFoundException("Shelf", 99L));
 
         assertThatThrownBy(() -> service.moveToShelf(1L, 99L))
                 .isInstanceOf(ResourceNotFoundException.class)
@@ -117,7 +122,7 @@ class ShelfEntryServiceTest {
 
     @Test
     void removeBook_throwsResourceNotFoundException_whenNotFound() {
-        when(shelfEntryRepository.existsById(99L)).thenReturn(false);
+        when(shelfEntryRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.removeBook(99L))
                 .isInstanceOf(ResourceNotFoundException.class)
@@ -126,8 +131,11 @@ class ShelfEntryServiceTest {
 
     @Test
     void removeBook_deletesNotesBeforeDeletingEntry_whenFound() {
+        Shelf shelf = new Shelf(1L, "Wunschliste", null, null, null);
+        ShelfEntry entry = new ShelfEntry(1L, shelf, null, null, 0, 0);
         BookNote note = new BookNote(10L, null, 5, "Test", LocalDateTime.now());
-        when(shelfEntryRepository.existsById(1L)).thenReturn(true);
+        when(shelfEntryRepository.findById(1L)).thenReturn(Optional.of(entry));
+        when(shelfService.getOrThrow(1L)).thenReturn(shelf);
         when(bookNoteRepository.findByShelfEntryId(1L)).thenReturn(List.of(note));
 
         service.removeBook(1L);
