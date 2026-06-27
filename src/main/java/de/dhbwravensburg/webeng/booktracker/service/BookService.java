@@ -45,6 +45,7 @@ public class BookService {
         existing.setIsbn(book.getIsbn());
         existing.setCoverUrl(book.getCoverUrl());
         existing.setPublishYear(book.getPublishYear());
+        existing.setTotalPages(book.getTotalPages());
         return repository.save(existing);
     }
 
