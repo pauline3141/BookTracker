@@ -4,6 +4,7 @@ import de.dhbwravensburg.webeng.booktracker.dto.openlibrary.OpenLibraryDoc;
 import de.dhbwravensburg.webeng.booktracker.dto.openlibrary.OpenLibrarySearchResponse;
 import de.dhbwravensburg.webeng.booktracker.dto.openlibrary.OpenLibrarySubjectResponse;
 import de.dhbwravensburg.webeng.booktracker.dto.openlibrary.OpenLibrarySubjectWork;
+import de.dhbwravensburg.webeng.booktracker.exception.ExternalApiClientException;
 import de.dhbwravensburg.webeng.booktracker.exception.ExternalApiException;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.retry.annotation.Backoff;
@@ -47,7 +48,7 @@ public class OpenLibraryService {
                             .build())
                     .retrieve()
                     .onStatus(HttpStatusCode::is4xxClientError, (req, res) -> {
-                        throw new ExternalApiException(
+                        throw new ExternalApiClientException(
                                 "Open Library client error: " + res.getStatusCode());
                     })
                     .onStatus(HttpStatusCode::is5xxServerError, (req, res) -> {
@@ -83,7 +84,7 @@ public class OpenLibraryService {
                             .build(subject))
                     .retrieve()
                     .onStatus(HttpStatusCode::is4xxClientError, (req, res) -> {
-                        throw new ExternalApiException(
+                        throw new ExternalApiClientException(
                                 "Open Library client error: " + res.getStatusCode());
                     })
                     .onStatus(HttpStatusCode::is5xxServerError, (req, res) -> {
