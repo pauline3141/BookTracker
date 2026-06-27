@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface ShelfEntryRepository extends JpaRepository<ShelfEntry, Long> {
-
     List<ShelfEntry> findByShelfId(Long shelfId);
+    List<ShelfEntry> findByBookId(Long bookId);
 }
