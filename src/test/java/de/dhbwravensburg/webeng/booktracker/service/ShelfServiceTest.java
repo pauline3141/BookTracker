@@ -1,9 +1,11 @@
 package de.dhbwravensburg.webeng.booktracker.service;
 
 import de.dhbwravensburg.webeng.booktracker.exception.ResourceNotFoundException;
+import de.dhbwravensburg.webeng.booktracker.model.BookNote;
 import de.dhbwravensburg.webeng.booktracker.model.Shelf;
 import de.dhbwravensburg.webeng.booktracker.model.ShelfEntry;
 import de.dhbwravensburg.webeng.booktracker.model.User;
+import de.dhbwravensburg.webeng.booktracker.repository.BookNoteRepository;
 import de.dhbwravensburg.webeng.booktracker.repository.ShelfEntryRepository;
 import de.dhbwravensburg.webeng.booktracker.repository.ShelfRepository;
 import de.dhbwravensburg.webeng.booktracker.repository.UserRepository;
@@ -36,6 +38,9 @@ class ShelfServiceTest {
 
     @Mock
     private ShelfEntryRepository shelfEntryRepository;
+
+    @Mock
+    private BookNoteRepository bookNoteRepository;
 
     @InjectMocks
     private ShelfService service;
@@ -110,15 +115,18 @@ class ShelfServiceTest {
     }
 
     @Test
-    void delete_removesAllEntriesBeforeDeletingShelf_whenFound() {
+    void delete_removesNotesAndEntriesBeforeDeletingShelf_whenFound() {
         User user = new User(1L, "testuser", "secret");
         mockCurrentUser(user);
         ShelfEntry entry = new ShelfEntry(5L, null, null, null, 0, 0);
+        BookNote note = new BookNote(10L, entry, 5, "Test", false, LocalDateTime.now());
         when(repository.existsByIdAndUserId(1L, 1L)).thenReturn(true);
         when(shelfEntryRepository.findByShelfId(1L)).thenReturn(List.of(entry));
+        when(bookNoteRepository.findByShelfEntryId(5L)).thenReturn(List.of(note));
 
         service.delete(1L);
 
+        verify(bookNoteRepository).deleteAll(List.of(note));
         verify(shelfEntryRepository).deleteAll(List.of(entry));
         verify(repository).deleteById(1L);
     }

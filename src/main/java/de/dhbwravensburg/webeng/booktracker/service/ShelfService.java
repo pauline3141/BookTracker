@@ -3,7 +3,9 @@ package de.dhbwravensburg.webeng.booktracker.service;
 import de.dhbwravensburg.webeng.booktracker.exception.InvalidUserContextException;
 import de.dhbwravensburg.webeng.booktracker.exception.ResourceNotFoundException;
 import de.dhbwravensburg.webeng.booktracker.model.Shelf;
+import de.dhbwravensburg.webeng.booktracker.model.ShelfEntry;
 import de.dhbwravensburg.webeng.booktracker.model.User;
+import de.dhbwravensburg.webeng.booktracker.repository.BookNoteRepository;
 import de.dhbwravensburg.webeng.booktracker.repository.ShelfEntryRepository;
 import de.dhbwravensburg.webeng.booktracker.repository.ShelfRepository;
 import de.dhbwravensburg.webeng.booktracker.repository.UserRepository;
@@ -19,13 +21,16 @@ public class ShelfService {
     private final ShelfRepository repository;
     private final UserRepository userRepository;
     private final ShelfEntryRepository shelfEntryRepository;
+    private final BookNoteRepository bookNoteRepository;
 
     public ShelfService(ShelfRepository repository,
                         UserRepository userRepository,
-                        ShelfEntryRepository shelfEntryRepository) {
+                        ShelfEntryRepository shelfEntryRepository,
+                        BookNoteRepository bookNoteRepository) {
         this.repository = repository;
         this.userRepository = userRepository;
         this.shelfEntryRepository = shelfEntryRepository;
+        this.bookNoteRepository = bookNoteRepository;
     }
 
     private User getCurrentUser() {
@@ -62,7 +67,12 @@ public class ShelfService {
         if (!repository.existsByIdAndUserId(id, getCurrentUser().getId())) {
             throw new ResourceNotFoundException("Shelf", id);
         }
-        shelfEntryRepository.deleteAll(shelfEntryRepository.findByShelfId(id));
+
+        List<ShelfEntry> entries = shelfEntryRepository.findByShelfId(id);
+        for (ShelfEntry entry : entries) {
+            bookNoteRepository.deleteAll(bookNoteRepository.findByShelfEntryId(entry.getId()));
+        }
+        shelfEntryRepository.deleteAll(entries);
         repository.deleteById(id);
     }
 }
