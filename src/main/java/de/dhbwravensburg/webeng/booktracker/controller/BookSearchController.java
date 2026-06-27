@@ -28,4 +28,11 @@ public class BookSearchController {
                 .map(OpenLibraryMapper::toResponse)
                 .toList();
     }
+
+    @GetMapping("/discover")
+    public List<BookResponse> discover() {
+        return openLibraryService.discover().stream()
+                .map(OpenLibraryMapper::toResponse)
+                .toList();
+    }
 }

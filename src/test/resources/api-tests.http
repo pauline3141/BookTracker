@@ -272,3 +272,7 @@ Content-Type: application/json
   "username": "testuser",
   "password": "secret123"
 }
+
+### GET discover books
+GET http://localhost:8080/api/books/discover
+Authorization: Bearer {{authToken}}
