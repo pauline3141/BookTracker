@@ -24,6 +24,18 @@ async function handle<T>(response: Response): Promise<T> {
     return (await response.json()) as T
 }
 
+function handleVoid(response: Response): void {
+    if (response.status === 401 || response.status === 403) {
+        localStorage.removeItem('token')
+        localStorage.removeItem('username')
+        window.location.href = '/login'
+        throw new Error(`HTTP ${response.status}`)
+    }
+    if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`)
+    }
+}
+
 // Auth
 export function login(request: AuthRequest): Promise<AuthResponse> {
     return fetch(`${BASE}/auth/login`, {
@@ -62,6 +74,13 @@ export function getShelf(id: number): Promise<Shelf> {
     }).then(res => handle<Shelf>(res))
 }
 
+export function deleteShelf(id: number): Promise<void> {
+    return fetch(`${BASE}/shelves/${id}`, {
+        method: 'DELETE',
+        headers: authHeader()
+    }).then(res => handleVoid(res))
+}
+
 // ShelfEntries
 export function getEntries(shelfId: number): Promise<ShelfEntry[]> {
     return fetch(`${BASE}/shelves/${shelfId}/entries`, {
@@ -97,15 +116,7 @@ export function removeEntry(shelfId: number, entryId: number): Promise<void> {
     return fetch(`${BASE}/shelves/${shelfId}/entries/${entryId}`, {
         method: 'DELETE',
         headers: authHeader()
-    }).then(res => {
-        if (res.status === 401 || res.status === 403) {
-            localStorage.removeItem('token')
-            localStorage.removeItem('username')
-            window.location.href = '/login'
-            throw new Error(`HTTP ${res.status}`)
-        }
-        if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    })
+    }).then(res => handleVoid(res))
 }
 
 // Books
