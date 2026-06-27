@@ -12,6 +12,12 @@ function authHeader(): Record<string, string> {
 }
 
 async function handle<T>(response: Response): Promise<T> {
+    if (response.status === 401 || response.status === 403) {
+        localStorage.removeItem('token')
+        localStorage.removeItem('username')
+        window.location.href = '/login'
+        throw new Error(`HTTP ${response.status}`)
+    }
     if (!response.ok) {
         throw new Error(`HTTP ${response.status}`)
     }
@@ -92,6 +98,12 @@ export function removeEntry(shelfId: number, entryId: number): Promise<void> {
         method: 'DELETE',
         headers: authHeader()
     }).then(res => {
+        if (res.status === 401 || res.status === 403) {
+            localStorage.removeItem('token')
+            localStorage.removeItem('username')
+            window.location.href = '/login'
+            throw new Error(`HTTP ${res.status}`)
+        }
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
     })
 }
