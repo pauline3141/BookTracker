@@ -24,6 +24,12 @@ export default function NoteForm({ entryId, onAdd }: NoteFormProps) {
         setForm(prev => ({ ...prev, [name]: value }))
     }
 
+    function blockInvalidNumberKeys(event: React.KeyboardEvent<HTMLInputElement>) {
+        if (['e', 'E', '+', '-'].includes(event.key)) {
+            event.preventDefault()
+        }
+    }
+
     async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault()
         if (!form.content.trim()) return
@@ -53,6 +59,8 @@ export default function NoteForm({ entryId, onAdd }: NoteFormProps) {
                     name="pageReference"
                     value={form.pageReference}
                     onChange={handleChange}
+                    onKeyDown={blockInvalidNumberKeys}
+                    min={0}
                     placeholder="Seite (optional)"
                 />
                 <textarea
