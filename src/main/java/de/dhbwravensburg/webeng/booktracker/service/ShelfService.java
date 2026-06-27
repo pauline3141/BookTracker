@@ -1,5 +1,6 @@
 package de.dhbwravensburg.webeng.booktracker.service;
 
+import de.dhbwravensburg.webeng.booktracker.exception.InvalidUserContextException;
 import de.dhbwravensburg.webeng.booktracker.exception.ResourceNotFoundException;
 import de.dhbwravensburg.webeng.booktracker.model.Shelf;
 import de.dhbwravensburg.webeng.booktracker.model.User;
@@ -25,7 +26,7 @@ public class ShelfService {
     private User getCurrentUser() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("User", 0L));
+                .orElseThrow(() -> new InvalidUserContextException(username));
     }
 
     public List<Shelf> findAll() {
