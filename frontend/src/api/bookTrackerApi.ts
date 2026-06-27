@@ -148,3 +148,10 @@ export function addNote(entryId: number, request: BookNoteRequest): Promise<Book
         body: JSON.stringify(request)
     }).then(res => handle<BookNote>(res))
 }
+
+export function deleteNote(noteId: number): Promise<void> {
+    return fetch(`${BASE}/notes/${noteId}`, {
+        method: 'DELETE',
+        headers: authHeader()
+    }).then(res => handleVoid(res))
+}
