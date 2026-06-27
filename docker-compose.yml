@@ -2,15 +2,15 @@ services:
   db:
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: booktracker
-      POSTGRES_USER: booktracker
-      POSTGRES_PASSWORD: booktracker
+      POSTGRES_DB: ${POSTGRES_DB:-booktracker}
+      POSTGRES_USER: ${POSTGRES_USER:-booktracker}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-booktracker}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U booktracker"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-booktracker}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -21,6 +21,10 @@ services:
       - "8080:8080"
     environment:
       SPRING_PROFILES_ACTIVE: docker
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in your .env file}
+      POSTGRES_DB: ${POSTGRES_DB:-booktracker}
+      POSTGRES_USER: ${POSTGRES_USER:-booktracker}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-booktracker}
     depends_on:
       db:
         condition: service_healthy
