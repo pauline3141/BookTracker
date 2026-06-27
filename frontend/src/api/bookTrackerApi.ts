@@ -134,6 +134,12 @@ export function searchBooks(query: string, offset: number): Promise<Book[]> {
     }).then(res => handle<Book[]>(res))
 }
 
+export function discoverBooks(): Promise<Book[]> {
+    return fetch(`${BASE}/books/discover`, {
+        headers: authHeader()
+    }).then(res => handle<Book[]>(res))
+}
+
 // Notes
 export function getNotes(entryId: number): Promise<BookNote[]> {
     return fetch(`${BASE}/entries/${entryId}/notes`, {

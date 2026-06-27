@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import ConfirmDialog from '../components/ConfirmDialog'
-import { getShelves, createShelf, deleteShelf } from '../api/bookTrackerApi'
+import { getShelves, createShelf, deleteShelf, getEntries } from '../api/bookTrackerApi'
 import type { Shelf } from '../types'
 
 export default function ShelfList() {
     const [shelves, setShelves] = useState<Shelf[]>([])
+    const [covers, setCovers] = useState<Record<number, string[]>>({})
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [showForm, setShowForm] = useState(false)
@@ -18,7 +19,25 @@ export default function ShelfList() {
     useEffect(() => {
         let ignore = false
         getShelves()
-            .then(data => { if (!ignore) { setShelves(data); setError(null) } })
+            .then(data => {
+                if (!ignore) {
+                    setShelves(data)
+                    setError(null)
+                    data.forEach(shelf => {
+                        getEntries(shelf.id)
+                            .then(entries => {
+                                if (!ignore) {
+                                    const shelfCovers = entries
+                                        .map(e => e.book.coverUrl)
+                                        .filter((url): url is string => !!url)
+                                        .slice(0, 4)
+                                    setCovers(prev => ({ ...prev, [shelf.id]: shelfCovers }))
+                                }
+                            })
+                            .catch(() => { /* Cover-Vorschau ist optional, Fehler hier ignorieren */ })
+                    })
+                }
+            })
             .catch(err => { if (!ignore) setError(err instanceof Error ? err.message : 'Fehler') })
             .finally(() => { if (!ignore) setLoading(false) })
         return () => { ignore = true }
@@ -67,31 +86,61 @@ export default function ShelfList() {
                         </div>
                     </div>
                 )}
-                {shelves.map(shelf => (
-                    <div
-                        key={shelf.id}
-                        className="card card-clickable"
-                        onClick={() => navigate(`/shelves/${shelf.id}`)}
-                        style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}
-                    >
-                        <div>
-                            <h2>{shelf.name}</h2>
-                            {shelf.description && (
-                                <p style={{ color: '#666', fontSize: '0.9rem' }}>{shelf.description}</p>
-                            )}
-                        </div>
-                        <button
-                            className="secondary"
-                            onClick={e => {
-                                e.stopPropagation()
-                                setShelfToDelete(shelf)
-                            }}
-                            style={{ fontSize: '0.8rem', flexShrink: 0 }}
+                {shelves.map(shelf => {
+                    const shelfCovers = covers[shelf.id] || []
+                    return (
+                        <div
+                            key={shelf.id}
+                            className="card card-clickable"
+                            onClick={() => navigate(`/shelves/${shelf.id}`)}
+                            style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1.25rem' }}
                         >
-                            Löschen
-                        </button>
-                    </div>
-                ))}
+                            <div
+                                style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(2, 40px)',
+                                    gridTemplateRows: 'repeat(2, 40px)',
+                                    gap: '2px',
+                                    flexShrink: 0,
+                                    borderRadius: '4px',
+                                    overflow: 'hidden',
+                                    background: '#e5e7eb'
+                                }}
+                            >
+                                {Array.from({ length: 4 }).map((_, i) => (
+                                    shelfCovers[i] ? (
+                                        <img
+                                            key={i}
+                                            src={shelfCovers[i]}
+                                            alt=""
+                                            style={{ width: '40px', height: '40px', objectFit: 'cover', display: 'block' }}
+                                        />
+                                    ) : (
+                                        <div key={i} style={{ width: '40px', height: '40px', background: '#e5e7eb' }} />
+                                    )
+                                ))}
+                            </div>
+
+                            <div style={{ flex: 1 }}>
+                                <h2>{shelf.name}</h2>
+                                {shelf.description && (
+                                    <p style={{ color: '#666', fontSize: '0.9rem' }}>{shelf.description}</p>
+                                )}
+                            </div>
+
+                            <button
+                                className="secondary"
+                                onClick={e => {
+                                    e.stopPropagation()
+                                    setShelfToDelete(shelf)
+                                }}
+                                style={{ fontSize: '0.8rem', flexShrink: 0 }}
+                            >
+                                Löschen
+                            </button>
+                        </div>
+                    )
+                })}
             </div>
 
             {shelfToDelete && (
