@@ -3,8 +3,10 @@ package de.dhbwravensburg.webeng.booktracker.service;
 import de.dhbwravensburg.webeng.booktracker.dto.ShelfEntryRequest;
 import de.dhbwravensburg.webeng.booktracker.exception.ResourceNotFoundException;
 import de.dhbwravensburg.webeng.booktracker.model.Book;
+import de.dhbwravensburg.webeng.booktracker.model.BookNote;
 import de.dhbwravensburg.webeng.booktracker.model.Shelf;
 import de.dhbwravensburg.webeng.booktracker.model.ShelfEntry;
+import de.dhbwravensburg.webeng.booktracker.repository.BookNoteRepository;
 import de.dhbwravensburg.webeng.booktracker.repository.BookRepository;
 import de.dhbwravensburg.webeng.booktracker.repository.ShelfEntryRepository;
 import de.dhbwravensburg.webeng.booktracker.repository.ShelfRepository;
@@ -14,12 +16,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ShelfEntryServiceTest {
@@ -32,6 +36,9 @@ class ShelfEntryServiceTest {
 
     @Mock
     private BookRepository bookRepository;
+
+    @Mock
+    private BookNoteRepository bookNoteRepository;
 
     @InjectMocks
     private ShelfEntryService service;
@@ -115,5 +122,17 @@ class ShelfEntryServiceTest {
         assertThatThrownBy(() -> service.removeBook(99L))
                 .isInstanceOf(ResourceNotFoundException.class)
                 .hasMessageContaining("ShelfEntry");
+    }
+
+    @Test
+    void removeBook_deletesNotesBeforeDeletingEntry_whenFound() {
+        BookNote note = new BookNote(10L, null, 5, "Test", LocalDateTime.now());
+        when(shelfEntryRepository.existsById(1L)).thenReturn(true);
+        when(bookNoteRepository.findByShelfEntryId(1L)).thenReturn(List.of(note));
+
+        service.removeBook(1L);
+
+        verify(bookNoteRepository).deleteAll(List.of(note));
+        verify(shelfEntryRepository).deleteById(1L);
     }
 }

@@ -11,7 +11,5 @@ public record BookNoteRequest(
 
         @NotBlank(message = "content must not be blank")
         @Size(max = 2000, message = "content must be at most 2000 characters")
-        String content,
-
-        boolean isPublic
+        String content
 ) {}

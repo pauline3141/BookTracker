@@ -28,13 +28,6 @@ public class BookNoteController {
                 .toList();
     }
 
-    @GetMapping("/notes/public")
-    public List<BookNoteResponse> getPublic() {
-        return service.findPublic().stream()
-                .map(BookNoteMapper::toResponse)
-                .toList();
-    }
-
     @PostMapping("/entries/{entryId}/notes")
     public ResponseEntity<BookNoteResponse> addNote(
             @PathVariable Long entryId,

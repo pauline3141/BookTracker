@@ -13,7 +13,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,7 +34,7 @@ class BookNoteServiceTest {
 
     @Test
     void addNote_throwsResourceNotFoundException_whenShelfEntryMissing() {
-        BookNoteRequest request = new BookNoteRequest(10, "Test note", false);
+        BookNoteRequest request = new BookNoteRequest(10, "Test note");
         when(shelfEntryRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.addNote(99L, request))
@@ -47,7 +46,7 @@ class BookNoteServiceTest {
     @Test
     void addNote_savesNote_whenShelfEntryExists() {
         ShelfEntry entry = new ShelfEntry(1L, null, null, null, 0, 0);
-        BookNoteRequest request = new BookNoteRequest(42, "Great chapter", true);
+        BookNoteRequest request = new BookNoteRequest(42, "Great chapter");
         when(shelfEntryRepository.findById(1L)).thenReturn(Optional.of(entry));
         when(noteRepository.save(any(BookNote.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -55,12 +54,11 @@ class BookNoteServiceTest {
 
         assertThat(result.getContent()).isEqualTo("Great chapter");
         assertThat(result.getPageReference()).isEqualTo(42);
-        assertThat(result.isPublic()).isTrue();
     }
 
     @Test
     void updateNote_throwsResourceNotFoundException_whenNotFound() {
-        BookNoteRequest request = new BookNoteRequest(5, "Updated", false);
+        BookNoteRequest request = new BookNoteRequest(5, "Updated");
         when(noteRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.updateNote(99L, request))
@@ -70,8 +68,8 @@ class BookNoteServiceTest {
 
     @Test
     void updateNote_updatesFields_whenFound() {
-        BookNote existing = new BookNote(1L, null, 10, "Old content", false, LocalDateTime.now());
-        BookNoteRequest request = new BookNoteRequest(20, "New content", true);
+        BookNote existing = new BookNote(1L, null, 10, "Old content", LocalDateTime.now());
+        BookNoteRequest request = new BookNoteRequest(20, "New content");
         when(noteRepository.findById(1L)).thenReturn(Optional.of(existing));
         when(noteRepository.save(any(BookNote.class))).thenAnswer(inv -> inv.getArgument(0));
 
@@ -79,7 +77,6 @@ class BookNoteServiceTest {
 
         assertThat(result.getContent()).isEqualTo("New content");
         assertThat(result.getPageReference()).isEqualTo(20);
-        assertThat(result.isPublic()).isTrue();
     }
 
     @Test
@@ -89,16 +86,5 @@ class BookNoteServiceTest {
         assertThatThrownBy(() -> service.deleteNote(99L))
                 .isInstanceOf(ResourceNotFoundException.class)
                 .hasMessageContaining("BookNote");
-    }
-
-    @Test
-    void findPublic_returnsOnlyPublicNotes() {
-        BookNote publicNote = new BookNote(1L, null, null, "Public note", true, LocalDateTime.now());
-        when(noteRepository.findByIsPublicTrue()).thenReturn(List.of(publicNote));
-
-        List<BookNote> result = service.findPublic();
-
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0).isPublic()).isTrue();
     }
 }

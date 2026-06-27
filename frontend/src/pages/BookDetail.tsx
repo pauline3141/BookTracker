@@ -1,4 +1,4 @@
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate, Link } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import Navbar from '../components/Navbar'
 import { getShelves, createBook, addEntry } from '../api/bookTrackerApi'
@@ -36,8 +36,13 @@ export default function BookDetail() {
     if (loading) return <p>Lade Regale ...</p>
     if (error) return <p className="error">Fehler: {error}</p>
 
+    const hasShelves = shelves.length > 0
+
     const addToShelf = () => {
-        if (!selectedShelf) return
+        if (!hasShelves || !selectedShelf) {
+            setError('Bitte zuerst ein Regal anlegen, bevor du Bücher hinzufügst.')
+            return
+        }
         createBook({
             title: book.title,
             author: book.author,
@@ -58,45 +63,76 @@ export default function BookDetail() {
                 <button className="secondary" onClick={() => navigate(-1)} style={{ marginBottom: '1.5rem' }}>
                     ← Zurück
                 </button>
-                <div className="card book-card">
+
+                <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start' }}>
                     {book.coverUrl ? (
-                        <img src={book.coverUrl} alt={book.title}
-                             style={{ width: '120px', height: '180px', objectFit: 'cover', borderRadius: '6px' }} />
+                        <img
+                            src={book.coverUrl}
+                            alt={book.title}
+                            style={{ width: '160px', height: '240px', objectFit: 'cover', borderRadius: '6px', flexShrink: 0 }}
+                        />
                     ) : (
-                        <div className="book-cover-placeholder" style={{ width: '120px', height: '180px' }}>Kein Cover</div>
+                        <div
+                            style={{
+                                width: '160px',
+                                height: '240px',
+                                background: '#e5e7eb',
+                                borderRadius: '6px',
+                                flexShrink: 0,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: '#9ca3af',
+                                fontSize: '0.85rem',
+                                textAlign: 'center',
+                                padding: '1rem'
+                            }}
+                        >
+                            Kein Cover verfügbar
+                        </div>
                     )}
-                    <div style={{ flex: 1 }}>
-                        <h1 style={{ fontSize: '1.5rem' }}>{book.title}</h1>
-                        <p style={{ color: '#666', marginTop: '0.3rem' }}>{book.author}</p>
-                        {book.isbn && <p className="book-meta">ISBN: {book.isbn}</p>}
-                        {book.publishYear > 0 && <p className="book-meta">Erstmals erschienen: {book.publishYear}</p>}
-                        {book.totalPages > 0 && <p className="book-meta">Seiten: {book.totalPages}</p>}
+
+                    <div>
+                        <h1>{book.title}</h1>
+                        <p style={{ color: '#666' }}>{book.author}</p>
+                        {book.publishYear && book.publishYear > 0 && (
+                            <p style={{ color: '#999', fontSize: '0.9rem' }}>Erschienen: {book.publishYear}</p>
+                        )}
+                        {book.isbn && (
+                            <p style={{ color: '#999', fontSize: '0.9rem' }}>ISBN: {book.isbn}</p>
+                        )}
                     </div>
                 </div>
 
-                <div className="card" style={{ marginTop: '1.5rem' }}>
-                    <h2>Ins Regal legen</h2>
-                    {error && <p className="error">Fehler: {error}</p>}
-                    {added ? (
-                        <p style={{ color: '#1e8449', marginTop: '0.5rem' }}>✓ Erfolgreich hinzugefügt!</p>
-                    ) : (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '0.75rem' }}>
-                            <div>
-                                <label style={{ fontSize: '0.85rem', color: '#666', display: 'block', marginBottom: '0.3rem' }}>
-                                    Regal
-                                </label>
-                                <select value={selectedShelf} onChange={e => setSelectedShelf(Number(e.target.value))}>
-                                    {shelves.map(shelf => (
-                                        <option key={shelf.id} value={shelf.id}>{shelf.name}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <button onClick={addToShelf} style={{ alignSelf: 'flex-start' }}>
-                                Ins Regal legen
-                            </button>
-                        </div>
-                    )}
-                </div>
+                {added ? (
+                    <p style={{ color: 'green', marginTop: '1.5rem' }}>
+                        Buch wurde erfolgreich ins Regal gelegt.
+                    </p>
+                ) : !hasShelves ? (
+                    <div className="error" style={{ marginTop: '1.5rem' }}>
+                        <p>Du hast noch kein Regal angelegt.</p>
+                        <p>
+                            <Link to="/shelves/new">Jetzt ein Regal erstellen</Link>, um Bücher hinzuzufügen.
+                        </p>
+                    </div>
+                ) : (
+                    <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', maxWidth: '300px' }}>
+                        <select
+                            value={selectedShelf}
+                            onChange={e => setSelectedShelf(Number(e.target.value))}
+                        >
+                            {shelves.map(shelf => (
+                                <option key={shelf.id} value={shelf.id}>
+                                    {shelf.name}
+                                </option>
+                            ))}
+                        </select>
+                        <button onClick={addToShelf}>
+                            Ins Regal legen
+                        </button>
+                        {error && <p className="error">{error}</p>}
+                    </div>
+                )}
             </div>
         </div>
     )

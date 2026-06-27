@@ -7,6 +7,5 @@ public record BookNoteResponse(
         Long shelfEntryId,
         Integer pageReference,
         String content,
-        boolean isPublic,
         LocalDateTime createdAt
 ) {}

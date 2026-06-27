@@ -28,7 +28,6 @@ export interface BookNote {
     id: number
     content: string
     pageReference: number | null
-    isPublic: boolean
 }
 
 export interface ShelfRequest {
@@ -39,7 +38,6 @@ export interface ShelfRequest {
 export interface BookNoteRequest {
     content: string
     pageReference: number | null
-    isPublic: boolean
 }
 
 export interface NoteFormInput {

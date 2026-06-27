@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import ReadingProgress from '../components/ReadingProgress'
 import NoteForm from '../components/NoteForm'
-import { getShelf, getEntries, getNotes, removeEntry, moveEntry, getShelves } from '../api/bookTrackerApi'
+import { getShelf, getEntries, getNotes, removeEntry, moveEntry, getShelves, deleteNote } from '../api/bookTrackerApi'
 import type { Shelf, ShelfEntry, BookNote } from '../types'
 
 export default function ShelfDetail() {
@@ -53,6 +53,17 @@ export default function ShelfDetail() {
 
     const handleNoteAdded = (entryId: number, note: BookNote) => {
         setNotes(prev => ({ ...prev, [entryId]: [...(prev[entryId] || []), note] }))
+    }
+
+    const handleNoteDeleted = (entryId: number, noteId: number) => {
+        deleteNote(noteId)
+            .then(() => {
+                setNotes(prev => ({
+                    ...prev,
+                    [entryId]: (prev[entryId] || []).filter(n => n.id !== noteId)
+                }))
+            })
+            .catch(err => setError(err instanceof Error ? err.message : 'Fehler beim Löschen der Notiz'))
     }
 
     const handleRemove = (entryId: number) => {
@@ -154,11 +165,32 @@ export default function ShelfDetail() {
                                     <p style={{ color: '#999', fontSize: '0.85rem' }}>Noch keine Notizen.</p>
                                 )}
                                 {(notes[entry.id] || []).map(note => (
-                                    <div key={note.id} style={{ marginBottom: '0.75rem', padding: '0.5rem', background: '#f9f5f0', borderRadius: '4px' }}>
-                                        {note.pageReference && (
-                                            <p style={{ fontSize: '0.75rem', color: '#999' }}>Seite {note.pageReference}</p>
-                                        )}
-                                        <p style={{ fontSize: '0.9rem' }}>{note.content}</p>
+                                    <div
+                                        key={note.id}
+                                        style={{
+                                            marginBottom: '0.75rem',
+                                            padding: '0.5rem',
+                                            background: '#f9f5f0',
+                                            borderRadius: '4px',
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'flex-start',
+                                            gap: '0.5rem'
+                                        }}
+                                    >
+                                        <div>
+                                            {note.pageReference && (
+                                                <p style={{ fontSize: '0.75rem', color: '#999' }}>Seite {note.pageReference}</p>
+                                            )}
+                                            <p style={{ fontSize: '0.9rem' }}>{note.content}</p>
+                                        </div>
+                                        <button
+                                            className="secondary"
+                                            style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem', flexShrink: 0 }}
+                                            onClick={() => handleNoteDeleted(entry.id, note.id)}
+                                        >
+                                            Löschen
+                                        </button>
                                     </div>
                                 ))}
                                 <NoteForm entryId={entry.id} onAdd={note => handleNoteAdded(entry.id, note)} />

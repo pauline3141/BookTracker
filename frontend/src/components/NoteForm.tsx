@@ -32,8 +32,7 @@ export default function NoteForm({ entryId, onAdd }: NoteFormProps) {
         try {
             const note = await addNote(entryId, {
                 content: form.content,
-                pageReference: form.pageReference ? Number(form.pageReference) : null,
-                isPublic: false
+                pageReference: form.pageReference ? Number(form.pageReference) : null
             })
             setForm(EMPTY)
             onAdd(note)

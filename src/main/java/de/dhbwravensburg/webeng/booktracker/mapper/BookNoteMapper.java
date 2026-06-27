@@ -16,7 +16,6 @@ public final class BookNoteMapper {
         note.setShelfEntry(shelfEntry);
         note.setPageReference(request.pageReference());
         note.setContent(request.content());
-        note.setPublic(request.isPublic());
         note.setCreatedAt(LocalDateTime.now());
         return note;
     }
@@ -27,7 +26,6 @@ public final class BookNoteMapper {
                 note.getShelfEntry().getId(),
                 note.getPageReference(),
                 note.getContent(),
-                note.isPublic(),
                 note.getCreatedAt()
         );
     }

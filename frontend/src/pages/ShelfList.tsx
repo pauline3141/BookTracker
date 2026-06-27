@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar'
-import { getShelves, createShelf } from '../api/bookTrackerApi'
+import ConfirmDialog from '../components/ConfirmDialog'
+import { getShelves, createShelf, deleteShelf } from '../api/bookTrackerApi'
 import type { Shelf } from '../types'
 
 export default function ShelfList() {
@@ -11,6 +12,7 @@ export default function ShelfList() {
     const [showForm, setShowForm] = useState(false)
     const [name, setName] = useState('')
     const [description, setDescription] = useState('')
+    const [shelfToDelete, setShelfToDelete] = useState<Shelf | null>(null)
     const navigate = useNavigate()
 
     useEffect(() => {
@@ -34,8 +36,16 @@ export default function ShelfList() {
             .catch(err => setError(err instanceof Error ? err.message : 'Fehler'))
     }
 
+    const confirmDelete = () => {
+        if (!shelfToDelete) return
+        deleteShelf(shelfToDelete.id)
+            .then(() => setShelves(prev => prev.filter(s => s.id !== shelfToDelete.id)))
+            .catch(err => setError(err instanceof Error ? err.message : 'Fehler beim Löschen'))
+            .finally(() => setShelfToDelete(null))
+    }
+
     if (loading) return <p>Lade Regale ...</p>
-    if (error) return <p className="error">Fehler beim Laden: {error}</p>
+    if (error) return <p className="error">Fehler: {error}</p>
 
     return (
         <div>
@@ -47,7 +57,6 @@ export default function ShelfList() {
                         {showForm ? 'Abbrechen' : '+ Neues Regal'}
                     </button>
                 </div>
-
                 {showForm && (
                     <div className="card" style={{ marginBottom: '1.5rem' }}>
                         <h2>Neues Regal anlegen</h2>
@@ -58,20 +67,41 @@ export default function ShelfList() {
                         </div>
                     </div>
                 )}
-
                 {shelves.map(shelf => (
                     <div
                         key={shelf.id}
                         className="card card-clickable"
                         onClick={() => navigate(`/shelves/${shelf.id}`)}
+                        style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}
                     >
-                        <h2>{shelf.name}</h2>
-                        {shelf.description && (
-                            <p style={{ color: '#666', fontSize: '0.9rem' }}>{shelf.description}</p>
-                        )}
+                        <div>
+                            <h2>{shelf.name}</h2>
+                            {shelf.description && (
+                                <p style={{ color: '#666', fontSize: '0.9rem' }}>{shelf.description}</p>
+                            )}
+                        </div>
+                        <button
+                            className="secondary"
+                            onClick={e => {
+                                e.stopPropagation()
+                                setShelfToDelete(shelf)
+                            }}
+                            style={{ fontSize: '0.8rem', flexShrink: 0 }}
+                        >
+                            Löschen
+                        </button>
                     </div>
                 ))}
             </div>
+
+            {shelfToDelete && (
+                <ConfirmDialog
+                    title="Regal löschen"
+                    message={`Möchtest du "${shelfToDelete.name}" wirklich löschen? Alle enthaltenen Bücher-Einträge werden ebenfalls entfernt.`}
+                    onConfirm={confirmDelete}
+                    onCancel={() => setShelfToDelete(null)}
+                />
+            )}
         </div>
     )
 }

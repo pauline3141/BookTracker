@@ -26,10 +26,6 @@ public class BookNoteService {
         return noteRepository.findByShelfEntryId(shelfEntryId);
     }
 
-    public List<BookNote> findPublic() {
-        return noteRepository.findByIsPublicTrue();
-    }
-
     public BookNote addNote(Long shelfEntryId, BookNoteRequest request) {
         var shelfEntry = shelfEntryRepository.findById(shelfEntryId)
                 .orElseThrow(() -> new ResourceNotFoundException("ShelfEntry", shelfEntryId));
@@ -41,7 +37,6 @@ public class BookNoteService {
                 .orElseThrow(() -> new ResourceNotFoundException("BookNote", noteId));
         existing.setPageReference(request.pageReference());
         existing.setContent(request.content());
-        existing.setPublic(request.isPublic());
         return noteRepository.save(existing);
     }
 

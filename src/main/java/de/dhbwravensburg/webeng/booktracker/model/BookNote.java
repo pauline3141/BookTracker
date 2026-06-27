@@ -34,7 +34,5 @@ public class BookNote {
     @Column(length = 2000)
     private String content;
 
-    private boolean isPublic;
-
     private LocalDateTime createdAt;
 }

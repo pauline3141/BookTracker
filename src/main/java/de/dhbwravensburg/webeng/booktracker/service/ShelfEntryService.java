@@ -4,6 +4,7 @@ import de.dhbwravensburg.webeng.booktracker.dto.ShelfEntryRequest;
 import de.dhbwravensburg.webeng.booktracker.exception.ResourceNotFoundException;
 import de.dhbwravensburg.webeng.booktracker.mapper.ShelfEntryMapper;
 import de.dhbwravensburg.webeng.booktracker.model.ShelfEntry;
+import de.dhbwravensburg.webeng.booktracker.repository.BookNoteRepository;
 import de.dhbwravensburg.webeng.booktracker.repository.BookRepository;
 import de.dhbwravensburg.webeng.booktracker.repository.ShelfEntryRepository;
 import de.dhbwravensburg.webeng.booktracker.repository.ShelfRepository;
@@ -17,13 +18,16 @@ public class ShelfEntryService {
     private final ShelfEntryRepository shelfEntryRepository;
     private final ShelfRepository shelfRepository;
     private final BookRepository bookRepository;
+    private final BookNoteRepository bookNoteRepository;
 
     public ShelfEntryService(ShelfEntryRepository shelfEntryRepository,
                              ShelfRepository shelfRepository,
-                             BookRepository bookRepository) {
+                             BookRepository bookRepository,
+                             BookNoteRepository bookNoteRepository) {
         this.shelfEntryRepository = shelfEntryRepository;
         this.shelfRepository = shelfRepository;
         this.bookRepository = bookRepository;
+        this.bookNoteRepository = bookNoteRepository;
     }
 
     public List<ShelfEntry> findByShelfId(Long shelfId) {
@@ -35,7 +39,6 @@ public class ShelfEntryService {
                 .orElseThrow(() -> new ResourceNotFoundException("Shelf", shelfId));
         var book = bookRepository.findById(request.bookId())
                 .orElseThrow(() -> new ResourceNotFoundException("Book", request.bookId()));
-
         ShelfEntry entry = ShelfEntryMapper.toEntity(shelf, book, request);
         return shelfEntryRepository.save(entry);
     }
@@ -61,6 +64,7 @@ public class ShelfEntryService {
         if (!shelfEntryRepository.existsById(entryId)) {
             throw new ResourceNotFoundException("ShelfEntry", entryId);
         }
+        bookNoteRepository.deleteAll(bookNoteRepository.findByShelfEntryId(entryId));
         shelfEntryRepository.deleteById(entryId);
     }
 }
