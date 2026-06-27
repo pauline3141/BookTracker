@@ -8,6 +8,7 @@ export default function BookDetail() {
     const { state } = useLocation()
     const navigate = useNavigate()
     const book = state?.book as Book | undefined
+    const isLoggedIn = !!localStorage.getItem('token')
     const [shelves, setShelves] = useState<Shelf[]>([])
     const [selectedShelf, setSelectedShelf] = useState<number | ''>('')
     const [added, setAdded] = useState(false)
@@ -15,6 +16,10 @@ export default function BookDetail() {
     const [error, setError] = useState<string | null>(null)
 
     useEffect(() => {
+        if (!isLoggedIn) {
+            setLoading(false)
+            return
+        }
         let ignore = false
         getShelves()
             .then(data => {
@@ -26,7 +31,7 @@ export default function BookDetail() {
             .catch(err => { if (!ignore) setError(err instanceof Error ? err.message : 'Fehler') })
             .finally(() => { if (!ignore) setLoading(false) })
         return () => { ignore = true }
-    }, [])
+    }, [isLoggedIn])
 
     if (!book) {
         navigate('/search')
@@ -104,7 +109,15 @@ export default function BookDetail() {
                     </div>
                 </div>
 
-                {added ? (
+                {!isLoggedIn ? (
+                    <div className="error" style={{ marginTop: '1.5rem' }}>
+                        <p>Melde dich an, um dieses Buch zu einem Regal hinzuzufügen.</p>
+                        <p>
+                            <Link to="/login">Jetzt anmelden</Link> oder{' '}
+                            <Link to="/register">registrieren</Link>.
+                        </p>
+                    </div>
+                ) : added ? (
                     <p style={{ color: 'green', marginTop: '1.5rem' }}>
                         Buch wurde erfolgreich ins Regal gelegt.
                     </p>
@@ -112,7 +125,7 @@ export default function BookDetail() {
                     <div className="error" style={{ marginTop: '1.5rem' }}>
                         <p>Du hast noch kein Regal angelegt.</p>
                         <p>
-                            <Link to="/shelves/new">Jetzt ein Regal erstellen</Link>, um Bücher hinzuzufügen.
+                            <Link to="/shelves">Jetzt ein Regal erstellen</Link>, um Bücher hinzuzufügen.
                         </p>
                     </div>
                 ) : (
