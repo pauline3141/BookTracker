@@ -44,26 +44,26 @@ public class ShelfEntryService {
     }
 
     public ShelfEntry updateProgress(Long entryId, int currentPage, int totalPages) {
-        ShelfEntry entry = getOwnedEntry(entryId);
+        ShelfEntry entry = getOwnedEntryOrThrow(entryId);
         entry.setCurrentPage(currentPage);
         entry.setTotalPages(totalPages);
         return shelfEntryRepository.save(entry);
     }
 
     public ShelfEntry moveToShelf(Long entryId, Long targetShelfId) {
-        ShelfEntry entry = getOwnedEntry(entryId);
+        ShelfEntry entry = getOwnedEntryOrThrow(entryId);
         Shelf targetShelf = shelfService.getOrThrow(targetShelfId);
         entry.setShelf(targetShelf);
         return shelfEntryRepository.save(entry);
     }
 
     public void removeBook(Long entryId) {
-        getOwnedEntry(entryId);
+        getOwnedEntryOrThrow(entryId);
         bookNoteRepository.deleteAll(bookNoteRepository.findByShelfEntryId(entryId));
         shelfEntryRepository.deleteById(entryId);
     }
 
-    private ShelfEntry getOwnedEntry(Long entryId) {
+    public ShelfEntry getOwnedEntryOrThrow(Long entryId) {
         ShelfEntry entry = shelfEntryRepository.findById(entryId)
                 .orElseThrow(() -> new ResourceNotFoundException("ShelfEntry", entryId));
         shelfService.getOrThrow(entry.getShelf().getId());
