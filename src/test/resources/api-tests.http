@@ -22,9 +22,6 @@ Content-Type: application/json
     client.global.set("authToken", response.body.token);
 %}
 
-### Health Check
-GET http://localhost:8080/api/health
-
 ### POST new book
 # @name createBook
 POST http://localhost:8080/api/books
@@ -54,47 +51,6 @@ Authorization: Bearer {{authToken}}
 
 ### GET book by id (404)
 GET http://localhost:8080/api/books/9999999
-Authorization: Bearer {{authToken}}
-
-### PUT book
-PUT http://localhost:8080/api/books/{{bookId}}
-Authorization: Bearer {{authToken}}
-Content-Type: application/json
-
-{
-  "title": "Brave New World (überarbeitet)",
-  "author": "Aldous Huxley",
-  "isbn": "9780060850524",
-  "coverUrl": null,
-  "publishYear": 1932,
-  "totalPages": 320
-}
-
-### POST a second book to test deletion
-# @name createSecondBook
-POST http://localhost:8080/api/books
-Authorization: Bearer {{authToken}}
-Content-Type: application/json
-
-{
-  "title": "1984",
-  "author": "George Orwell",
-  "isbn": "9780451524935",
-  "coverUrl": null,
-  "publishYear": 1949,
-  "totalPages": 328
-}
-
-> {%
-    client.global.set("secondBookId", response.body.id);
-%}
-
-### DELETE book
-DELETE http://localhost:8080/api/books/{{secondBookId}}
-Authorization: Bearer {{authToken}}
-
-### DELETE book (404, already deleted)
-DELETE http://localhost:8080/api/books/{{secondBookId}}
 Authorization: Bearer {{authToken}}
 
 ### POST new shelf
