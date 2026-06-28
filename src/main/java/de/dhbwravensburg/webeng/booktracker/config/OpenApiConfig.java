@@ -20,7 +20,7 @@ public class OpenApiConfig {
                 .info(new Info()
                         .title("BookTracker API")
                         .version("0.1.0")
-                        .description("Search for books, add them to shelves, and track reading progress")
+                        .description("Manage a shared book catalog and private, user-scoped shelves. Search and discovery are backed by the Open Library API.")
                         .contact(new Contact()
                                 .name("DHBW Web-Engineering")
                                 .email("noreply@dhbw.de")))
