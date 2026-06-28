@@ -43,6 +43,7 @@ public class OpenLibraryService {
                     .uri(uriBuilder -> uriBuilder
                             .path("/search.json")
                             .queryParam("q", query)
+                            .queryParam("fields", "title,author_name,isbn,first_publish_year,cover_i,number_of_pages_median")
                             .queryParam("limit", 10)
                             .queryParam("offset", offset)
                             .build())
