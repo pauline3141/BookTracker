@@ -1,6 +1,8 @@
+Matrikelnummer: 1745652
+
 # BookTracker
 
-A full-stack web application for cataloging and managing personal book collections. Users can browse popular titles, search the Open Library catalog, organize books into custom shelves, track reading progress, and annotate individual entries with notes. Each account maintains a private, isolated collection, secured through JWT-based authentication.
+A full-stack web application for cataloging and managing personal book collections. Users can browse popular titles, search the Open Library catalog, organize books into custom shelves, track reading progress, and annotate individual entries with notes. Books form a shared catalog, while each user's shelves, reading progress, and notes are private and secured through JWT-based authentication.
 
 ### Tech Stack
 
@@ -11,7 +13,7 @@ A full-stack web application for cataloging and managing personal book collectio
 | Database | H2 (development), PostgreSQL (Docker) |
 | Authentication | Spring Security, JWT |
 | API | REST + GraphQL |
-| External API | Open Library Search API |
+| External API | Open Library (Search + Subjects API) |
 | Build Tool | Maven |
 | Containerization | Docker, Docker Compose |
 | CI/CD | GitHub Actions |
@@ -35,11 +37,14 @@ The application follows a three-tier architecture. The React frontend communicat
 
 The backend is organized in a strict layered architecture: controllers handle HTTP and GraphQL, services contain the business logic, and Spring Data repositories handle persistence. Request and response DTOs decouple the API from the JPA entities.
 
+**Data model:** Books form a shared catalog. When a user adds a book, the backend reuses an existing catalog entry with the same ISBN instead of creating a duplicate. Shelves belong to individual users, and each shelf entry links a catalog book to a shelf together with that user's reading progress and notes. As a result, the same book can appear on many users' shelves without being duplicated, and books are never removed when a shelf is deleted. Full CRUD is provided for shelves, shelf entries, and notes; the book catalog is read-and-add only, so individual users cannot modify or delete catalog entries that others may be using.
+
 ## Features
 
 - Public discover page showing popular books from a random subject, with a search bar to find any book (no login required)
 - Search books via the Open Library API with pagination
 - User registration and login secured with JWT
+- A shared book catalog: adding a book reuses an existing entry with the same ISBN instead of creating a duplicate
 - Create and manage private, user-scoped shelves, with a cover-image preview thumbnail per shelf
 - Add books to shelves and track reading progress
 - Move books between shelves
@@ -76,12 +81,7 @@ npm run dev
 - GraphiQL: http://localhost:8080/graphiql
 - H2 Console: http://localhost:8080/h2-console
 
-The discover page and book search are available without an account. Navigate to `/register` to create an account before adding books to shelves. All shelves, books, and notes are scoped to the logged-in user.
-
-A demo account is seeded on startup so you can log in immediately without registering:
-
-- **Username:** `demo`
-- **Password:** `demo123`
+The discover page and book search are available without an account. Navigate to `/register` to create an account before adding books to shelves. Shelves, reading progress, and notes are private to the logged-in user, while the book catalog is shared across all users.
 
 ### Option 2: With Docker (PostgreSQL database)
 
@@ -122,7 +122,11 @@ The API is secured with JWT. After registering or logging in via `/api/auth/regi
 Authorization: Bearer <token>
 ```
 
+A demo account is seeded automatically on first startup, so you can log in immediately without registering: username `demo`, password `demo123`.
+
 The frontend handles this automatically once logged in. Two endpoints are intentionally public and do not require a token: `GET /api/books/search` and `GET /api/books/discover`, since they only read from the external Open Library API and never expose user data.
+
+In the Swagger UI, use the **Authorize** button to paste a token and try the protected endpoints directly.
 
 ## GraphQL
 
@@ -154,16 +158,16 @@ GraphiQL is available at `/graphiql` for interactive testing.
 ./mvnw test
 ```
 
-The test suite includes 43 tests across unit tests (services, mocked with Mockito) and integration tests (controllers, tested with MockMvc), covering successful flows, validation failures, not-found and conflict cases, and cascading delete behavior.
+The test suite includes 43 tests across unit tests (services, mocked with Mockito) and integration tests (controllers, tested with MockMvc), covering successful flows, validation failures, not-found and conflict cases, ISBN-based deduplication, user-scoped access control, and cascading delete behavior.
 
 ## External API
 
 This project uses the [Open Library API](https://openlibrary.org/dev/docs/api).
 
-- **Search endpoint:** `https://openlibrary.org/search.json`: used to search books by title, author, or ISBN
+- **Search endpoint:** `https://openlibrary.org/search.json`: used to search books by title, author, or ISBN; the `fields` parameter is used to request ISBNs so catalog deduplication can work
 - **Subjects endpoint:** `https://openlibrary.org/subjects/{subject}.json`: used to power the discover page with popular books from a randomly chosen subject (fiction, fantasy, mystery, science, romance, history, biography, thriller, poetry, philosophy)
 - **Authentication:** None required
-- **Resilience:** Requests are retried automatically with exponential backoff (up to 3 attempts) in case of transient errors, and failures are mapped to a 502 Bad Gateway response.
+- **Resilience:** Requests are retried automatically with exponential backoff (up to 3 attempts) for transient (5xx and network) errors, while 4xx client errors are not retried; failures are mapped to a 502 Bad Gateway response.
 
 ## Project Structure
 
@@ -171,7 +175,7 @@ This project uses the [Open Library API](https://openlibrary.org/dev/docs/api).
 BookTracker/
 ├── src/                          # Spring Boot backend
 │   ├── main/java/.../
-│   │   ├── config/                 # App config, DataSeeder
+│   │   ├── config/                 # App config, DataSeeder, OpenAPI config
 │   │   ├── controller/              # REST and GraphQL controllers
 │   │   ├── dto/                     # Request/Response records
 │   │   ├── exception/               # Custom exceptions, GlobalExceptionHandler

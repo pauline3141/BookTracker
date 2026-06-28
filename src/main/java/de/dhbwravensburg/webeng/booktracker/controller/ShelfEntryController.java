@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,7 +19,7 @@ import java.net.URI;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/shelves/{shelfId}/entries")
+@RequestMapping(value = "/api/shelves/{shelfId}/entries", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Shelf Entries", description = "Add books to shelves, track progress, and move entries between shelves")
 public class ShelfEntryController {
 
