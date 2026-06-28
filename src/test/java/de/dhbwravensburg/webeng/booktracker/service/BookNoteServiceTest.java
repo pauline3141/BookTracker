@@ -5,7 +5,6 @@ import de.dhbwravensburg.webeng.booktracker.exception.ResourceNotFoundException;
 import de.dhbwravensburg.webeng.booktracker.model.BookNote;
 import de.dhbwravensburg.webeng.booktracker.model.ShelfEntry;
 import de.dhbwravensburg.webeng.booktracker.repository.BookNoteRepository;
-import de.dhbwravensburg.webeng.booktracker.repository.ShelfEntryRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -27,7 +26,7 @@ class BookNoteServiceTest {
     private BookNoteRepository noteRepository;
 
     @Mock
-    private ShelfEntryRepository shelfEntryRepository;
+    private ShelfEntryService shelfEntryService;
 
     @InjectMocks
     private BookNoteService service;
@@ -35,7 +34,8 @@ class BookNoteServiceTest {
     @Test
     void addNote_throwsResourceNotFoundException_whenShelfEntryMissing() {
         BookNoteRequest request = new BookNoteRequest(10, "Test note");
-        when(shelfEntryRepository.findById(99L)).thenReturn(Optional.empty());
+        when(shelfEntryService.getOwnedEntryOrThrow(99L))
+                .thenThrow(new ResourceNotFoundException("ShelfEntry", 99L));
 
         assertThatThrownBy(() -> service.addNote(99L, request))
                 .isInstanceOf(ResourceNotFoundException.class)
@@ -47,7 +47,7 @@ class BookNoteServiceTest {
     void addNote_savesNote_whenShelfEntryExists() {
         ShelfEntry entry = new ShelfEntry(1L, null, null, null, 0, 0);
         BookNoteRequest request = new BookNoteRequest(42, "Great chapter");
-        when(shelfEntryRepository.findById(1L)).thenReturn(Optional.of(entry));
+        when(shelfEntryService.getOwnedEntryOrThrow(1L)).thenReturn(entry);
         when(noteRepository.save(any(BookNote.class))).thenAnswer(inv -> inv.getArgument(0));
 
         BookNote result = service.addNote(1L, request);
@@ -68,9 +68,11 @@ class BookNoteServiceTest {
 
     @Test
     void updateNote_updatesFields_whenFound() {
-        BookNote existing = new BookNote(1L, null, 10, "Old content", LocalDateTime.now());
+        ShelfEntry entry = new ShelfEntry(1L, null, null, null, 0, 0);
+        BookNote existing = new BookNote(1L, entry, 10, "Old content", LocalDateTime.now());
         BookNoteRequest request = new BookNoteRequest(20, "New content");
         when(noteRepository.findById(1L)).thenReturn(Optional.of(existing));
+        when(shelfEntryService.getOwnedEntryOrThrow(1L)).thenReturn(entry);
         when(noteRepository.save(any(BookNote.class))).thenAnswer(inv -> inv.getArgument(0));
 
         BookNote result = service.updateNote(1L, request);
@@ -81,7 +83,7 @@ class BookNoteServiceTest {
 
     @Test
     void deleteNote_throwsResourceNotFoundException_whenNotFound() {
-        when(noteRepository.existsById(99L)).thenReturn(false);
+        when(noteRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.deleteNote(99L))
                 .isInstanceOf(ResourceNotFoundException.class)
